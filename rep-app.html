@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>تطبيق المناديب - AMIAl EXPRESS</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --card: #1e293b;
+      --border: rgba(148, 163, 184, 0.2);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #38bdf8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --whatsapp: #25D366;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 40px; }
+
+    /* شاشة تسجيل الدخول */
+    .login-screen {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background: radial-gradient(circle at top, #1e293b, #0b1120 70%);
+    }
+    .login-card {
+      background: var(--card);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 20px;
+      padding: 28px 22px;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    }
+    .app-logo {
+      width: 64px; height: 64px; border-radius: 18px;
+      background: linear-gradient(135deg, #38bdf8, #22c55e);
+      display: grid; place-items: center; font-size: 28px; font-weight: 900;
+      color: #00111f; margin: 0 auto 14px;
+    }
+    .login-title { font-size: 20px; font-weight: 800; margin: 0 0 6px; color: #fff; }
+    .login-sub { font-size: 13px; color: var(--muted); margin: 0 0 20px; }
+    .auth-input {
+      width: 100%; padding: 13px 14px; margin-bottom: 12px;
+      border-radius: 12px; border: 1px solid var(--border);
+      background: #0f172a; color: #fff; font-size: 15px; font-weight: bold;
+      text-align: center;
+    }
+    .auth-input:focus { outline: none; border-color: var(--primary); }
+    .btn-login {
+      width: 100%; padding: 14px; border: none; border-radius: 12px;
+      background: linear-gradient(135deg, #38bdf8, #0284c7);
+      color: #00111f; font-size: 16px; font-weight: 900; cursor: pointer;
+    }
+    .login-error { color: var(--danger); font-size: 13px; font-weight: bold; margin-top: 12px; min-height: 20px; }
+
+    /* واجهة التطبيق بعد الدخول */
+    #appScreen { display: none; }
+    .header {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .brand-title { font-size: 16px; font-weight: 800; color: var(--primary); margin: 0; }
+    .btn-logout {
+      background: rgba(239, 68, 68, 0.15); color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3); padding: 5px 10px;
+      border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer;
+    }
+    
+    .control-bar { display: flex; gap: 8px; align-items: center; }
+    .rep-badge {
+      flex: 1; background: #0f172a; border: 1px solid var(--primary);
+      padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 800; color: #fff;
+    }
+    .sheet-select {
+      padding: 9px 10px; border-radius: 10px; border: 1px solid var(--border);
+      background: #0f172a; color: var(--primary); font-size: 13px; font-weight: bold;
+    }
+    .btn-refresh {
+      background: var(--primary); color: #00111f; border: none;
+      padding: 9px 14px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 13px;
+    }
+
+    /* لوحة الحسابات والعمولة والصافي */
+    .finance-panel {
+      margin: 12px 14px;
+      background: linear-gradient(145deg, #162032, #1e293b);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+    .money-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .sum-card {
+      background: rgba(15, 23, 42, 0.75); padding: 10px 6px;
+      border-radius: 10px; text-align: center; border: 1px solid var(--border);
+    }
+    .sum-num { font-size: 16px; font-weight: 900; display: block; margin-bottom: 3px; }
+    .sum-lbl { font-size: 11px; color: var(--muted); }
+
+    /* فلتر سريع للأوردرات */
+    .filter-tabs {
+      display: flex; gap: 6px; padding: 0 14px 12px; overflow-x: auto;
+    }
+    .f-tab {
+      flex: 1; padding: 8px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--card); color: var(--muted); font-size: 12px; font-weight: bold;
+      text-align: center; cursor: pointer;
+    }
+    .f-tab.active { background: var(--primary); color: #00111f; border-color: var(--primary); }
+
+    /* كروت الأوردرات */
+    .orders-container { padding: 0 14px; display: grid; gap: 14px; }
+    .order-card {
+      background: var(--card); border-radius: 16px; padding: 15px;
+      border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    .order-card.delivered { border-right: 5px solid var(--success); opacity: 0.9; }
+    .order-card.returned { border-right: 5px solid var(--danger); opacity: 0.85; }
+    .order-card.pending { border-right: 5px solid var(--warning); }
+
+    .client-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .client-name { font-size: 16px; font-weight: 800; color: #fff; margin: 0; }
+    .price-badge {
+      background: rgba(56, 189, 248, 0.15); color: var(--primary);
+      padding: 4px 11px; border-radius: 999px; font-weight: 900; font-size: 14px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .info-line { font-size: 13px; color: #cbd5e1; margin: 5px 0; line-height: 1.5; }
+    .info-line span { color: var(--muted); }
+
+    .contact-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+    .c-btn {
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      padding: 9px 6px; border-radius: 10px; text-decoration: none;
+      font-size: 13px; font-weight: bold; color: #fff;
+    }
+    .btn-call { background: #2563eb; }
+    .btn-wa { background: var(--whatsapp); color: #002b11; }
+    .btn-sms { background: #475569; }
+
+    .status-controls {
+      display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+    }
+    .status-select {
+      flex: 1; padding: 10px; border-radius: 10px; background: #0f172a;
+      color: #fff; border: 1px solid var(--primary); font-size: 13px; font-weight: bold;
+    }
+    .btn-save-status {
+      background: var(--success); color: #002b11; border: none;
+      padding: 0 18px; border-radius: 10px; font-weight: 900; font-size: 14px; cursor: pointer;
+    }
+    .btn-save-status:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
+    .loader { text-align: center; padding: 30px; color: var(--primary); font-weight: bold; display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- 1. شاشة تسجيل الدخول للمندوب -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="app-logo">A</div>
+      <h1 class="login-title">AMIAl EXPRESS</h1>
+      <p class="login-sub">بوابة المناديب الذكية - سجل الدخول لعرض أوردراتك</p>
+      
+      <input type="text" id="loginRepInput" class="auth-input" placeholder="اسم المندوب (مثال: ماهر18)" />
+      <input type="password" id="loginPinInput" class="auth-input" inputmode="numeric" placeholder="الكود السري (PIN)" />
+      
+      <button id="loginBtn" class="btn-login" onclick="attemptLogin()">🔐 دخول وعرض الأوردرات</button>
+      <div id="loginError" class="login-error"></div>
+    </div>
+  </div>
+
+  <!-- 2. شاشة أوردرات وحسابات المندوب -->
+  <div id="appScreen">
+    <div class="header">
+      <div class="header-top">
+        <h1 class="brand-title">🚚 AMIAl EXPRESS</h1>
+        <button class="btn-logout" onclick="logoutRep()">🚪 خروج</button>
+      </div>
+      <div class="control-bar">
+        <div class="rep-badge">👤 <span id="activeRepLabel">---</span></div>
+        <select id="sheetSelect" class="sheet-select" onchange="loadAuthenticatedOrders()">
+          <option value="1/11/2026">شهر 11</option>
+          <option value="1/10/2026">شهر 10</option>
+        </select>
+        <button class="btn-refresh" onclick="loadAuthenticatedOrders()">🔄 تحديث</button>
+      </div>
+    </div>
+
+    <!-- لوحة الحسابات المالية -->
+    <div class="finance-panel">
+      <div class="stats-row">
+        <div class="sum-card">
+          <span class="sum-num" id="totalOrdersCount" style="color:var(--primary);">0</span>
+          <span class="sum-lbl">إجمالي الأوردرات</span>
+        </div>
+        <div class="sum-card">
+          <span class="sum-num" id="deliveredOrdersCount" style="color:var(--success);">0</span>
+          <span class="sum-lbl">تم التسليم</span>
+        </div>
+        <div class="sum-card">
+          <span class="sum-num" id="pendingOrdersCount" style="color:var(--warning);">0</span>
+          <span class="sum-lbl">متبقي / مرتجع</span>
+        </div>
+      </div>
+
+      <div class="money-row">
+        <div class="sum-card">
+          <span class="sum-num" id="totalCashCollected" style="color:#fff;">0</span>
+          <span class="sum-lbl">الإجمالي (K)</span>
+        </div>
+        <div class="sum-card">
+          <span class="sum-num" id="totalCommission" style="color:var(--warning);">0</span>
+          <span class="sum-lbl">عمولتك</span>
+        </div>
+        <div class="sum-card" style="border-color: var(--success);">
+          <span class="sum-num" id="netToPay" style="color:var(--success);">0</span>
+          <span class="sum-lbl">الصافي للتوريد</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- أزرار الفلترة -->
+    <div class="filter-tabs">
+      <div class="f-tab active" onclick="setFilter('all', this)">الكل</div>
+      <div class="f-tab" onclick="setFilter('pending', this)">⏳ تحت التسليم</div>
+      <div class="f-tab" onclick="setFilter('delivered', this)">✅ تم التسليم</div>
+      <div class="f-tab" onclick="setFilter('returned', this)">❌ مرتجع</div>
+    </div>
+
+    <div id="loader" class="loader">⏳ جاري تحميل أوردراتك المعتمدة...</div>
+    <div class="orders-container" id="ordersList"></div>
+  </div>
+
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwhl35SGkN60YJ4fDlNOdBSxLiPgfz3V5Bf6PiG9Od_PkseEcIJ72l7jDspvDNqOyBgkg/exec";
+    
+    let currentRep = "";
+    let currentPin = "";
+    let currentOrdersCache = [];
+    let defaultCommRate = 25;
+    let activeFilter = "all";
+
+    window.onload = function() {
+      // التحقق إذا تم فتح التطبيق عبر رابط مخصص (?rep=...&pin=...)
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlRep = urlParams.get("rep");
+      const urlPin = urlParams.get("pin");
+
+      if (urlRep && urlPin) {
+        document.getElementById("loginRepInput").value = urlRep;
+        document.getElementById("loginPinInput").value = urlPin;
+        attemptLogin();
+        return;
+      }
+
+      // التحقق من وجود جلسة محفوظة مسبقاً على هاتف المندوب
+      const savedRep = localStorage.getItem("amial_auth_rep");
+      const savedPin = localStorage.getItem("amial_auth_pin");
+      if (savedRep && savedPin) {
+        currentRep = savedRep;
+        currentPin = savedPin;
+        showAppScreen();
+        loadAuthenticatedOrders();
+      }
+    };
+
+    async function attemptLogin() {
+      const repVal = document.getElementById("loginRepInput").value.trim();
+      const pinVal = document.getElementById("loginPinInput").value.trim();
+      const errEl = document.getElementById("loginError");
+      const btn = document.getElementById("loginBtn");
+
+      if (!repVal || !pinVal) {
+        errEl.innerText = "من فضلك أدخل اسم المندوب والكود السري!";
+        return;
+      }
+
+      errEl.innerText = "";
+      btn.disabled = true;
+      btn.innerText = "⏳ جاري التحقق...";
+
+      const sheetName = document.getElementById("sheetSelect").value;
+      const url = `${WEB_APP_URL}?action=loginAndGetOrders&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(repVal)}&pin=${encodeURIComponent(pinVal)}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        btn.disabled = false;
+        btn.innerText = "🔐 دخول وعرض الأوردرات";
+
+        if (data.status === "success") {
+          currentRep = repVal;
+          currentPin = pinVal;
+          defaultCommRate = data.defaultCommission || 25;
+          localStorage.setItem("amial_auth_rep", currentRep);
+          localStorage.setItem("amial_auth_pin", currentPin);
+
+          showAppScreen();
+          currentOrdersCache = data.orders || [];
+          renderOrders();
+        } else {
+          errEl.innerText = data.message || "بيانات الدخول غير صحيحة!";
+        }
+      } catch (e) {
+        btn.disabled = false;
+        btn.innerText = "🔐 دخول وعرض الأوردرات";
+        errEl.innerText = "تعذر الاتصال بالسيرفر، تأكد من الإنترنت.";
+      }
+    }
+
+    function showAppScreen() {
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("appScreen").style.display = "block";
+      document.getElementById("activeRepLabel").innerText = currentRep;
+    }
+
+    function logoutRep() {
+      localStorage.removeItem("amial_auth_rep");
+      localStorage.removeItem("amial_auth_pin");
+      currentRep = "";
+      currentPin = "";
+      currentOrdersCache = [];
+      document.getElementById("appScreen").style.display = "none";
+      document.getElementById("loginScreen").style.display = "flex";
+      document.getElementById("loginPinInput").value = "";
+    }
+
+    async function loadAuthenticatedOrders() {
+      const sheetName = document.getElementById("sheetSelect").value;
+      document.getElementById("loader").style.display = "block";
+      document.getElementById("ordersList").innerHTML = "";
+
+      const url = `${WEB_APP_URL}?action=loginAndGetOrders&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        document.getElementById("loader").style.display = "none";
+
+        if (data.status === "success") {
+          defaultCommRate = data.defaultCommission || 25;
+          currentOrdersCache = data.orders || [];
+          renderOrders();
+        } else {
+          alert(data.message || "انتهت صلاحية الجلسة، يرجى تسجيل الدخول مجدداً.");
+          logoutRep();
+        }
+      } catch (e) {
+        document.getElementById("loader").style.display = "none";
+        alert("خطأ في تحديث البيانات.");
+      }
+    }
+
+    function setFilter(filterType, tabEl) {
+      activeFilter = filterType;
+      document.querySelectorAll(".f-tab").forEach(t => t.classList.remove("active"));
+      tabEl.classList.add("active");
+      renderOrders();
+    }
+
+    function formatEgyptianPhone(rawPhone) {
+      let clean = String(rawPhone || "").replace(/[^0-9]/g, "");
+      if (clean.length === 10 && clean.startsWith("1")) clean = "0" + clean;
+      return clean;
+    }
+
+    function recalculateTotals() {
+      let totalCount = currentOrdersCache.length;
+      let deliveredCount = 0;
+      let totalCash = 0;
+      let totalComm = 0;
+
+      currentOrdersCache.forEach(order => {
+        const collectedNum = parseFloat(order.collectedK) || 0;
+        const priceNum = parseFloat(order.price) || 0;
+        const isDelivered = collectedNum > 0 || order.confirmL === "تم التسليم";
+
+        if (isDelivered) {
+          deliveredCount++;
+          totalCash += (collectedNum > 0 ? collectedNum : priceNum);
+          totalComm += (order.commissionR > 0 ? order.commissionR : defaultCommRate);
+        }
+      });
+
+      const netAmount = totalCash - totalComm;
+
+      document.getElementById("totalOrdersCount").innerText = totalCount;
+      document.getElementById("deliveredOrdersCount").innerText = deliveredCount;
+      document.getElementById("pendingOrdersCount").innerText = totalCount - deliveredCount;
+      document.getElementById("totalCashCollected").innerText = totalCash.toLocaleString() + " ج.م";
+      document.getElementById("totalCommission").innerText = totalComm.toLocaleString() + " ج.م";
+      document.getElementById("netToPay").innerText = netAmount.toLocaleString() + " ج.م";
+    }
+
+    function renderOrders() {
+      const listEl = document.getElementById("ordersList");
+      const sheetName = document.getElementById("sheetSelect").value;
+      listEl.innerHTML = "";
+
+      recalculateTotals();
+
+      if (currentOrdersCache.length === 0) {
+        listEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted);">لا توجد أوردرات مسجلة لك في ورقة (${sheetName}) حالياً.</div>`;
+        return;
+      }
+
+      currentOrdersCache.forEach(order => {
+        const phone = formatEgyptianPhone(order.phone);
+        const waPhone = phone.startsWith("0") ? "2" + phone : phone;
+        const priceNum = parseFloat(order.price) || 0;
+        const collectedNum = parseFloat(order.collectedK) || 0;
+
+        const isDelivered = collectedNum > 0 || order.confirmL === "تم التسليم";
+        const isReturned = order.confirmL === "مرتجع" || order.notesN === "مرتجع";
+        const statusType = isDelivered ? "delivered" : (isReturned ? "returned" : "pending");
+
+        // تطبيق الفلتر المختار
+        if (activeFilter !== "all" && activeFilter !== statusType) return;
+
+        const fullAddress = [order.governorate, order.address].filter(Boolean).join(" - ");
+        const prefilledMsg = `أهلاً بحضرتك أ/ ${order.clientName}، مع حضرتك مندوب شركة أميال إكسبريس للشحن (${currentRep}). بخصوص أوردر (${order.sender}) بقيمة ${priceNum} جنيه، متواجد لتسليم الشحنة لحضرتك اليوم.`;
+        const encodedMsg = encodeURIComponent(prefilledMsg);
+
+        const card = document.createElement("div");
+        card.className = `order-card ${statusType}`;
+        card.id = `card-${order.rowIndex}`;
+        card.innerHTML = `
+          <div class="client-row">
+            <h3 class="client-name">${order.clientName}</h3>
+            <span class="price-badge">${priceNum} ج.م</span>
+          </div>
+          <div class="info-line"><span>📍 العنوان:</span> ${fullAddress || "غير مسجل"}</div>
+          <div class="info-line"><span>📱 الهاتف:</span> <b dir="ltr">${phone}</b> | <span>🏢 الراسل:</span> ${order.sender}</div>
+          <div class="info-line"><span>💰 الوارد المسجل (K):</span> <b id="k-val-${order.rowIndex}" style="color:var(--success);">${collectedNum} ج.م</b></div>
+
+          <div class="contact-actions">
+            <a href="tel:${phone}" class="c-btn btn-call">📞 اتصال</a>
+            <a href="https://wa.me/${waPhone}?text=${encodedMsg}" target="_blank" class="c-btn btn-wa">💬 واتساب</a>
+            <a href="sms:${phone}?body=${encodedMsg}" class="c-btn btn-sms">✉️ SMS</a>
+          </div>
+
+          <div class="status-controls">
+            <select id="select-${order.rowIndex}" class="status-select">
+              <option value="تحت التسليم" ${statusType === "pending" ? "selected" : ""}>⏳ تحت التسليم</option>
+              <option value="تم التسليم" ${statusType === "delivered" ? "selected" : ""}>✅ تم التسليم</option>
+              <option value="مرتجع" ${statusType === "returned" ? "selected" : ""}>❌ مرتجع</option>
+            </select>
+            <button id="btn-${order.rowIndex}" class="btn-save-status" onclick="submitOrderUpdate(${order.rowIndex}, ${priceNum}, '${sheetName}')">تأكيد</button>
+          </div>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    async function submitOrderUpdate(rowIndex, price, sheetName) {
+      const statusVal = document.getElementById(`select-${rowIndex}`).value;
+      const btn = document.getElementById(`btn-${rowIndex}`);
+      
+      btn.disabled = true;
+      btn.innerText = "⏳...";
+
+      try {
+        const url = `${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${price}`;
+        const res = await fetch(url);
+        const json = await res.json();
+
+        if (json.status === "success") {
+          const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex);
+          if (orderObj) {
+            if (statusVal === "تم التسليم") {
+              orderObj.collectedK = price;
+              orderObj.confirmL = "تم التسليم";
+              orderObj.notesN = "تم التسليم";
+            } else if (statusVal === "مرتجع") {
+              orderObj.collectedK = 0;
+              orderObj.confirmL = "مرتجع";
+              orderObj.notesN = "مرتجع";
+            } else {
+              orderObj.collectedK = 0;
+              orderObj.confirmL = "";
+              orderObj.notesN = "مع المندوب";
+            }
+          }
+
+          btn.innerText = "✔ تم";
+          setTimeout(() => {
+            renderOrders();
+          }, 600);
+        } else {
+          alert(json.message || "حدث خطأ أثناء التحديث.");
+          btn.disabled = false;
+          btn.innerText = "تأكيد";
+        }
+      } catch (e) {
+        alert("فشل الاتصال بالسيرفر.");
+        btn.disabled = false;
+        btn.innerText = "تأكيد";
+      }
+    }
+  </script>
+</body>
+</html>
