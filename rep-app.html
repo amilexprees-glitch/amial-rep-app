@@ -54,14 +54,14 @@
             </div>
         </header>
 
-        <!-- شريط اختيار الشهر واليوم -->
+        <!-- شريط اختيار الشهر (متوافق مع صيغة الشيت 1/11/2026) واليوم -->
         <div class="bg-[#131e32] border border-slate-700/80 rounded-2xl p-3 mb-4 grid grid-cols-2 gap-3">
             <div>
                 <label class="block text-[11px] font-bold text-slate-400 mb-1">الشهر</label>
                 <select id="appMonth" onchange="fetchOrders()" class="w-full bg-[#0f172a] border border-slate-700 text-white text-xs font-bold rounded-xl p-2.5 outline-none">
-                    <option value="شهر 11" selected>شهر 11</option>
-                    <option value="شهر 10">شهر 10</option>
-                    <option value="شهر 12">شهر 12</option>
+                    <option value="1/11/2026" selected>شهر 11 (2026)</option>
+                    <option value="1/10/2026">شهر 10 (2026)</option>
+                    <option value="1/12/2026">شهر 12 (2026)</option>
                 </select>
             </div>
             <div>
@@ -122,7 +122,7 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyBQj_YDi5grUEVPGowjH889XuuFRXBVXKPa-0RyGRGTINNK4ZuoLFQ2JojjmdfvCDNUg/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzWsQBSS0E_ZhH9-jF2MMOw7u0MPI8vLpl0HoycE-yNSZonG_9d0wINmab87vr400Pz/exec";
 
         let currentRep = "";
         let currentPin = "";
@@ -189,7 +189,7 @@
                         renderOrders();
                     } else {
                         if (isInitial) alert(data.message || "خطأ في بيانات الدخول");
-                        else document.getElementById("ordersContainer").innerHTML = `<div class="bg-[#131e32] p-8 rounded-2xl text-center text-red-400 font-bold">${data.message}</div>`;
+                        else document.getElementById("ordersContainer").innerHTML = `<div class="bg-[#131e32] border border-slate-700 p-8 rounded-2xl text-center text-red-400 font-bold">${data.message}</div>`;
                     }
                 })
                 .catch(err => alert("خطأ في الاتصال بالخادم"));
@@ -232,6 +232,7 @@
                 return;
             }
 
+            // صيغة رسالة الواتساب المحدثة بدقة
             const waMessage = `مساء الخير يا فندم, شركة اميال للشحن بنتواصل مع حضرتك لتأكيد الطلب الخاص بكم: \nلتأكيد الطلب و بدء عمليه الشحن\nبرجاء الرد بكلمه تأكيد\nو ارسال العنوان تفصيلي مع علامه مميزه بالعنوان (سوبرماركت / مدرسه / قهوه / مسجد ... ) او لوكيشن موقع الاستلام , و لو في رقم اضافي لحضرتك ممكن تبعته علشان المندوب يقدر يسلم حضرتك الطلب \nشكرا لزوق حضرتك`;
             const encodedWa = encodeURIComponent(waMessage);
 
