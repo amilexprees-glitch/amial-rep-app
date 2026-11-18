@@ -1,365 +1,519 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AMIAL EXPRESS - بوابة المناديب الذكية</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
-        body { font-family: 'Cairo', sans-serif; background-color: #0b1322; color: #e2e8f0; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>تطبيق المناديب - AMIAl EXPRESS</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --card: #1e293b;
+      --border: rgba(148, 163, 184, 0.2);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #38bdf8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --whatsapp: #25D366;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 40px; }
+
+    /* شاشة تسجيل الدخول */
+    .login-screen {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background: radial-gradient(circle at top, #1e293b, #0b1120 70%);
+    }
+    .login-card {
+      background: var(--card);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 20px;
+      padding: 28px 22px;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    }
+    .app-logo {
+      width: 64px; height: 64px; border-radius: 18px;
+      background: linear-gradient(135deg, #38bdf8, #22c55e);
+      display: grid; place-items: center; font-size: 28px; font-weight: 900;
+      color: #00111f; margin: 0 auto 14px;
+    }
+    .login-title { font-size: 20px; font-weight: 800; margin: 0 0 6px; color: #fff; }
+    .login-sub { font-size: 13px; color: var(--muted); margin: 0 0 20px; }
+    .auth-input {
+      width: 100%; padding: 13px 14px; margin-bottom: 12px;
+      border-radius: 12px; border: 1px solid var(--border);
+      background: #0f172a; color: #fff; font-size: 15px; font-weight: bold;
+      text-align: center;
+    }
+    .auth-input:focus { outline: none; border-color: var(--primary); }
+    .btn-login {
+      width: 100%; padding: 14px; border: none; border-radius: 12px;
+      background: linear-gradient(135deg, #38bdf8, #0284c7);
+      color: #00111f; font-size: 16px; font-weight: 900; cursor: pointer;
+    }
+    .login-error { color: var(--danger); font-size: 13px; font-weight: bold; margin-top: 12px; min-height: 20px; }
+
+    /* واجهة التطبيق بعد الدخول */
+    #appScreen { display: none; }
+    .header {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .brand-title { font-size: 16px; font-weight: 800; color: var(--primary); margin: 0; }
+    .btn-logout {
+      background: rgba(239, 68, 68, 0.15); color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3); padding: 5px 10px;
+      border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer;
+    }
+    
+    .control-bar { display: flex; gap: 8px; align-items: center; }
+    .rep-badge {
+      flex: 1; background: #0f172a; border: 1px solid var(--primary);
+      padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 800; color: #fff;
+    }
+    .sheet-select {
+      padding: 9px 10px; border-radius: 10px; border: 1px solid var(--border);
+      background: #0f172a; color: var(--primary); font-size: 13px; font-weight: bold;
+    }
+    .btn-refresh {
+      background: var(--primary); color: #00111f; border: none;
+      padding: 9px 14px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 13px;
+    }
+
+    /* لوحة الحسابات والعمولة والصافي */
+    .finance-panel {
+      margin: 12px 14px;
+      background: linear-gradient(145deg, #162032, #1e293b);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+    .money-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .sum-card {
+      background: rgba(15, 23, 42, 0.75); padding: 10px 6px;
+      border-radius: 10px; text-align: center; border: 1px solid var(--border);
+    }
+    .sum-num { font-size: 16px; font-weight: 900; display: block; margin-bottom: 3px; }
+    .sum-lbl { font-size: 11px; color: var(--muted); }
+
+    /* فلتر سريع للأوردرات */
+    .filter-tabs {
+      display: flex; gap: 6px; padding: 0 14px 12px; overflow-x: auto;
+    }
+    .f-tab {
+      flex: 1; padding: 8px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--card); color: var(--muted); font-size: 12px; font-weight: bold;
+      text-align: center; cursor: pointer;
+    }
+    .f-tab.active { background: var(--primary); color: #00111f; border-color: var(--primary); }
+
+    /* كروت الأوردرات */
+    .orders-container { padding: 0 14px; display: grid; gap: 14px; }
+    .order-card {
+      background: var(--card); border-radius: 16px; padding: 15px;
+      border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    .order-card.delivered { border-right: 5px solid var(--success); opacity: 0.9; }
+    .order-card.returned { border-right: 5px solid var(--danger); opacity: 0.85; }
+    .order-card.pending { border-right: 5px solid var(--warning); }
+
+    .client-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .client-name { font-size: 16px; font-weight: 800; color: #fff; margin: 0; }
+    .price-badge {
+      background: rgba(56, 189, 248, 0.15); color: var(--primary);
+      padding: 4px 11px; border-radius: 999px; font-weight: 900; font-size: 14px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .info-line { font-size: 13px; color: #cbd5e1; margin: 5px 0; line-height: 1.5; }
+    .info-line span { color: var(--muted); }
+
+    .contact-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+    .c-btn {
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      padding: 9px 6px; border-radius: 10px; text-decoration: none;
+      font-size: 13px; font-weight: bold; color: #fff;
+    }
+    .btn-call { background: #2563eb; }
+    .btn-wa { background: var(--whatsapp); color: #002b11; }
+    .btn-sms { background: #475569; }
+
+    .status-controls {
+      display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+    }
+    .status-select {
+      flex: 1; padding: 10px; border-radius: 10px; background: #0f172a;
+      color: #fff; border: 1px solid var(--primary); font-size: 13px; font-weight: bold;
+    }
+    .btn-save-status {
+      background: var(--success); color: #002b11; border: none;
+      padding: 0 18px; border-radius: 10px; font-weight: 900; font-size: 14px; cursor: pointer;
+    }
+    .btn-save-status:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
+    .loader { text-align: center; padding: 30px; color: var(--primary); font-weight: bold; display: none; }
+  </style>
 </head>
-<body class="min-h-screen pb-20">
+<body>
 
-    <!-- شاشة تسجيل الدخول -->
-    <div id="loginScreen" class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-[#131e32] rounded-3xl shadow-2xl w-full max-w-md p-8 border border-slate-700/80 text-center">
-            <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#22d3ee] to-[#34d399] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-cyan-500/20">
-                <span class="text-4xl font-extrabold text-[#0f172a]">A</span>
-            </div>
-            <h1 class="text-2xl font-extrabold tracking-wider text-white">AMIAL EXPRESS</h1>
-            <p class="text-slate-400 text-xs mt-1 mb-6">بوابة المناديب الذكية - سجل الدخول لعرض أوردراتك</p>
+  <!-- 1. شاشة تسجيل الدخول للمندوب -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="app-logo">A</div>
+      <h1 class="login-title">AMIAl EXPRESS</h1>
+      <p class="login-sub">بوابة المناديب الذكية - سجل الدخول لعرض أوردراتك</p>
+      
+      <input type="text" id="loginRepInput" class="auth-input" placeholder="اسم المندوب (مثال: ماهر18)" />
+      <input type="password" id="loginPinInput" class="auth-input" inputmode="numeric" placeholder="الكود السري (PIN)" />
+      
+      <button id="loginBtn" class="btn-login" onclick="attemptLogin()">🔐 دخول وعرض الأوردرات</button>
+      <div id="loginError" class="login-error"></div>
+    </div>
+  </div>
 
-            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
-                <input type="text" id="repNameInput" required placeholder="اسم المندوب (مثال: ماهر18)" 
-                       class="w-full px-4 py-3.5 rounded-xl bg-[#0f172a] border border-slate-700 text-white placeholder-slate-500 text-center font-bold focus:ring-2 focus:ring-cyan-400 outline-none">
-                <input type="password" id="repPinInput" required placeholder="الكود السري (PIN)" 
-                       class="w-full px-4 py-3.5 rounded-xl bg-[#0f172a] border border-slate-700 text-white placeholder-slate-500 text-center font-bold focus:ring-2 focus:ring-cyan-400 outline-none">
-                <button type="submit" id="loginBtn" 
-                        class="w-full bg-gradient-to-r from-[#0ea5e9] to-[#22d3ee] text-[#0f172a] py-3.5 rounded-xl font-extrabold text-base hover:opacity-90 transition shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-lock text-amber-900"></i>
-                    <span>دخول وعرض الأوردرات</span>
-                </button>
-            </form>
-        </div>
+  <!-- 2. شاشة أوردرات وحسابات المندوب -->
+  <div id="appScreen">
+    <div class="header">
+      <div class="header-top">
+        <h1 class="brand-title">🚚 AMIAl EXPRESS</h1>
+        <button class="btn-logout" onclick="logoutRep()">🚪 خروج</button>
+      </div>
+      <div class="control-bar">
+        <div class="rep-badge">👤 <span id="activeRepLabel">---</span></div>
+        <select id="sheetSelect" class="sheet-select" onchange="loadAuthenticatedOrders()">
+          <option value="1/11/2026">شهر 11</option>
+          <option value="1/10/2026">شهر 10</option>
+        </select>
+        <button class="btn-refresh" onclick="loadAuthenticatedOrders()">🔄 تحديث</button>
+      </div>
     </div>
 
-    <!-- لوحة التحكم الرئيسية (التصميم الداكن) -->
-    <div id="appScreen" class="hidden max-w-4xl mx-auto p-4">
-        
-        <!-- الهيدر العلوي -->
-        <header class="bg-[#131e32] border border-slate-700/80 rounded-2xl p-4 mb-4 flex justify-between items-center shadow-lg">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#22d3ee] to-[#34d399] flex items-center justify-center font-extrabold text-[#0f172a]">A</div>
-                <div>
-                    <h2 id="welcomeRep" class="text-sm font-extrabold text-white">مندوبنا العزيز</h2>
-                    <p class="text-[10px] text-emerald-400 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> متصل الآن (تتبع نشط)</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-2">
-                <button onclick="fetchOrders()" class="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-cyan-500/30"><i class="fa-solid fa-rotate ml-1"></i> تحديث</button>
-                <button onclick="logout()" class="bg-red-500/20 text-red-300 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-red-500/30"><i class="fa-solid fa-power-off ml-1"></i> خروج</button>
-            </div>
-        </header>
-
-        <!-- شريط اختيار الشهر (متوافق مع صيغة الشيت 1/11/2026) واليوم -->
-        <div class="bg-[#131e32] border border-slate-700/80 rounded-2xl p-3 mb-4 grid grid-cols-2 gap-3">
-            <div>
-                <label class="block text-[11px] font-bold text-slate-400 mb-1">الشهر</label>
-                <select id="appMonth" onchange="fetchOrders()" class="w-full bg-[#0f172a] border border-slate-700 text-white text-xs font-bold rounded-xl p-2.5 outline-none">
-                    <option value="1/11/2026" selected>شهر 11 (2026)</option>
-                    <option value="1/10/2026">شهر 10 (2026)</option>
-                    <option value="1/12/2026">شهر 12 (2026)</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-[11px] font-bold text-slate-400 mb-1">اليوم</label>
-                <select id="appDay" onchange="fetchOrders()" class="w-full bg-[#0f172a] border border-slate-700 text-white text-xs font-bold rounded-xl p-2.5 outline-none">
-                    <option value="all">كل أيام الشهر</option>
-                    <script>
-                        for(let d=1; d<=31; d++) {
-                            document.write(`<option value="${d}">يوم ${d}</option>`);
-                        }
-                    </script>
-                </select>
-            </div>
+    <!-- لوحة الحسابات المالية -->
+    <div class="finance-panel">
+      <div class="stats-row">
+        <div class="sum-card">
+          <span class="sum-num" id="totalOrdersCount" style="color:var(--primary);">0</span>
+          <span class="sum-lbl">إجمالي الأوردرات</span>
         </div>
-
-        <!-- إحصائيات الأوردرات -->
-        <div class="grid grid-cols-3 gap-2.5 mb-4 text-center">
-            <div class="bg-[#131e32] border border-slate-700/80 p-3 rounded-2xl shadow-md">
-                <span class="text-[10px] text-slate-400 block font-bold">إجمالي الأوردرات</span>
-                <span id="totalOrders" class="text-base font-extrabold text-white">0</span>
-            </div>
-            <div class="bg-[#131e32] border border-slate-700/80 p-3 rounded-2xl shadow-md">
-                <span class="text-[10px] text-slate-400 block font-bold">تم التسليم</span>
-                <span id="deliveredOrdersCount" class="text-base font-extrabold text-emerald-400">0</span>
-            </div>
-            <div class="bg-[#131e32] border border-slate-700/80 p-3 rounded-2xl shadow-md">
-                <span class="text-[10px] text-slate-400 block font-bold">متبقي / مرتجع</span>
-                <span id="remainingOrdersCount" class="text-base font-extrabold text-amber-400">0</span>
-            </div>
+        <div class="sum-card">
+          <span class="sum-num" id="deliveredOrdersCount" style="color:var(--success);">0</span>
+          <span class="sum-lbl">تم التسليم</span>
         </div>
-
-        <!-- الإحصائيات المالية -->
-        <div class="grid grid-cols-3 gap-2.5 mb-4 text-center">
-            <div class="bg-[#131e32] border border-slate-700/80 p-3 rounded-2xl shadow-md">
-                <span class="text-[10px] text-slate-400 block font-bold">الإجمالي (K)</span>
-                <span id="totalCollection" class="text-sm font-extrabold text-cyan-400">0 ج.م</span>
-            </div>
-            <div class="bg-[#131e32] border border-slate-700/80 p-3 rounded-2xl shadow-md">
-                <span class="text-[10px] text-slate-400 block font-bold">عمولتك</span>
-                <span id="totalCommission" class="text-sm font-extrabold text-emerald-400">0 ج.م</span>
-            </div>
-            <div class="bg-[#131e32] border border-slate-700/80 p-3 rounded-2xl shadow-md">
-                <span class="text-[10px] text-slate-400 block font-bold">الصافي للتوريد</span>
-                <span id="netToDeliver" class="text-sm font-extrabold text-amber-400">0 ج.م</span>
-            </div>
+        <div class="sum-card">
+          <span class="sum-num" id="pendingOrdersCount" style="color:var(--warning);">0</span>
+          <span class="sum-lbl">متبقي / مرتجع</span>
         </div>
+      </div>
 
-        <!-- أزرار الفلترة السريعة -->
-        <div class="grid grid-cols-4 gap-2 mb-4">
-            <button onclick="setFilter('all')" id="filterBtn_all" class="bg-cyan-600 text-white py-2 rounded-xl text-xs font-bold shadow transition">الكل</button>
-            <button onclick="setFilter('تحت التسليم')" id="filterBtn_تحت التسليم" class="bg-[#131e32] border border-slate-700 text-slate-300 py-2 rounded-xl text-xs font-bold hover:bg-slate-800 transition">تحت التسليم</button>
-            <button onclick="setFilter('تم التسليم')" id="filterBtn_تم التسليم" class="bg-[#131e32] border border-slate-700 text-slate-300 py-2 rounded-xl text-xs font-bold hover:bg-slate-800 transition">تم التسليم</button>
-            <button onclick="setFilter('مرتجع')" id="filterBtn_مرتجع" class="bg-[#131e32] border border-slate-700 text-slate-300 py-2 rounded-xl text-xs font-bold hover:bg-slate-800 transition">مرتجع</button>
+      <div class="money-row">
+        <div class="sum-card">
+          <span class="sum-num" id="totalCashCollected" style="color:#fff;">0</span>
+          <span class="sum-lbl">الإجمالي (K)</span>
         </div>
-
-        <!-- قائمة الأوردرات -->
-        <div id="ordersContainer" class="space-y-3"></div>
+        <div class="sum-card">
+          <span class="sum-num" id="totalCommission" style="color:var(--warning);">0</span>
+          <span class="sum-lbl">عمولتك</span>
+        </div>
+        <div class="sum-card" style="border-color: var(--success);">
+          <span class="sum-num" id="netToPay" style="color:var(--success);">0</span>
+          <span class="sum-lbl">الصافي للتوريد</span>
+        </div>
+      </div>
     </div>
 
-    <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzWsQBSS0E_ZhH9-jF2MMOw7u0MPI8vLpl0HoycE-yNSZonG_9d0wINmab87vr400Pz/exec";
+    <!-- أزرار الفلترة -->
+    <div class="filter-tabs">
+      <div class="f-tab active" onclick="setFilter('all', this)">الكل</div>
+      <div class="f-tab" onclick="setFilter('pending', this)">⏳ تحت التسليم</div>
+      <div class="f-tab" onclick="setFilter('delivered', this)">✅ تم التسليم</div>
+      <div class="f-tab" onclick="setFilter('returned', this)">❌ مرتجع</div>
+    </div>
 
-        let currentRep = "";
-        let currentPin = "";
-        let commissionRate = 25;
-        let ordersData = [];
-        let currentStatusFilter = "all";
+    <div id="loader" class="loader">⏳ جاري تحميل أوردراتك المعتمدة...</div>
+    <div class="orders-container" id="ordersList"></div>
+  </div>
 
-        function startLocationTracking(repName) {
-            if (navigator.geolocation) {
-                navigator.geolocation.watchPosition((position) => {
-                    fetch(WEB_APP_URL, {
-                        method: "POST",
-                        body: JSON.stringify({
-                            action: "updateLocation",
-                            rep: repName,
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        })
-                    }).catch(err => console.log(err));
-                }, (error) => console.log(error), { enableHighAccuracy: true });
-            }
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwhl35SGkN60YJ4fDlNOdBSxLiPgfz3V5Bf6PiG9Od_PkseEcIJ72l7jDspvDNqOyBgkg/exec";
+    
+    let currentRep = "";
+    let currentPin = "";
+    let currentOrdersCache = [];
+    let defaultCommRate = 25;
+    let activeFilter = "all";
+
+    window.onload = function() {
+      // التحقق إذا تم فتح التطبيق عبر رابط مخصص (?rep=...&pin=...)
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlRep = urlParams.get("rep");
+      const urlPin = urlParams.get("pin");
+
+      if (urlRep && urlPin) {
+        document.getElementById("loginRepInput").value = urlRep;
+        document.getElementById("loginPinInput").value = urlPin;
+        attemptLogin();
+        return;
+      }
+
+      // التحقق من وجود جلسة محفوظة مسبقاً على هاتف المندوب
+      const savedRep = localStorage.getItem("amial_auth_rep");
+      const savedPin = localStorage.getItem("amial_auth_pin");
+      if (savedRep && savedPin) {
+        currentRep = savedRep;
+        currentPin = savedPin;
+        showAppScreen();
+        loadAuthenticatedOrders();
+      }
+    };
+
+    async function attemptLogin() {
+      const repVal = document.getElementById("loginRepInput").value.trim();
+      const pinVal = document.getElementById("loginPinInput").value.trim();
+      const errEl = document.getElementById("loginError");
+      const btn = document.getElementById("loginBtn");
+
+      if (!repVal || !pinVal) {
+        errEl.innerText = "من فضلك أدخل اسم المندوب والكود السري!";
+        return;
+      }
+
+      errEl.innerText = "";
+      btn.disabled = true;
+      btn.innerText = "⏳ جاري التحقق...";
+
+      const sheetName = document.getElementById("sheetSelect").value;
+      const url = `${WEB_APP_URL}?action=loginAndGetOrders&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(repVal)}&pin=${encodeURIComponent(pinVal)}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        btn.disabled = false;
+        btn.innerText = "🔐 دخول وعرض الأوردرات";
+
+        if (data.status === "success") {
+          currentRep = repVal;
+          currentPin = pinVal;
+          defaultCommRate = data.defaultCommission || 25;
+          localStorage.setItem("amial_auth_rep", currentRep);
+          localStorage.setItem("amial_auth_pin", currentPin);
+
+          showAppScreen();
+          currentOrdersCache = data.orders || [];
+          renderOrders();
+        } else {
+          errEl.innerText = data.message || "بيانات الدخول غير صحيحة!";
         }
+      } catch (e) {
+        btn.disabled = false;
+        btn.innerText = "🔐 دخول وعرض الأوردرات";
+        errEl.innerText = "تعذر الاتصال بالسيرفر، تأكد من الإنترنت.";
+      }
+    }
 
-        function handleLogin(e) {
-            e.preventDefault();
-            currentRep = document.getElementById("repNameInput").value.trim();
-            currentPin = document.getElementById("repPinInput").value.trim();
-            fetchOrders(true);
+    function showAppScreen() {
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("appScreen").style.display = "block";
+      document.getElementById("activeRepLabel").innerText = currentRep;
+    }
+
+    function logoutRep() {
+      localStorage.removeItem("amial_auth_rep");
+      localStorage.removeItem("amial_auth_pin");
+      currentRep = "";
+      currentPin = "";
+      currentOrdersCache = [];
+      document.getElementById("appScreen").style.display = "none";
+      document.getElementById("loginScreen").style.display = "flex";
+      document.getElementById("loginPinInput").value = "";
+    }
+
+    async function loadAuthenticatedOrders() {
+      const sheetName = document.getElementById("sheetSelect").value;
+      document.getElementById("loader").style.display = "block";
+      document.getElementById("ordersList").innerHTML = "";
+
+      const url = `${WEB_APP_URL}?action=loginAndGetOrders&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        document.getElementById("loader").style.display = "none";
+
+        if (data.status === "success") {
+          defaultCommRate = data.defaultCommission || 25;
+          currentOrdersCache = data.orders || [];
+          renderOrders();
+        } else {
+          alert(data.message || "انتهت صلاحية الجلسة، يرجى تسجيل الدخول مجدداً.");
+          logoutRep();
         }
+      } catch (e) {
+        document.getElementById("loader").style.display = "none";
+        alert("خطأ في تحديث البيانات.");
+      }
+    }
 
-        function setFilter(status) {
-            currentStatusFilter = status;
-            ['all', 'تحت التسليم', 'تم التسليم', 'مرتجع'].forEach(s => {
-                const btn = document.getElementById(`filterBtn_${s}`);
-                if(s === status) {
-                    btn.className = "bg-cyan-600 text-white py-2 rounded-xl text-xs font-bold shadow transition";
-                } else {
-                    btn.className = "bg-[#131e32] border border-slate-700 text-slate-300 py-2 rounded-xl text-xs font-bold hover:bg-slate-800 transition";
-                }
-            });
-            renderOrders();
+    function setFilter(filterType, tabEl) {
+      activeFilter = filterType;
+      document.querySelectorAll(".f-tab").forEach(t => t.classList.remove("active"));
+      tabEl.classList.add("active");
+      renderOrders();
+    }
+
+    function formatEgyptianPhone(rawPhone) {
+      let clean = String(rawPhone || "").replace(/[^0-9]/g, "");
+      if (clean.length === 10 && clean.startsWith("1")) clean = "0" + clean;
+      return clean;
+    }
+
+    function recalculateTotals() {
+      let totalCount = currentOrdersCache.length;
+      let deliveredCount = 0;
+      let totalCash = 0;
+      let totalComm = 0;
+
+      currentOrdersCache.forEach(order => {
+        const collectedNum = parseFloat(order.collectedK) || 0;
+        const priceNum = parseFloat(order.price) || 0;
+        const isDelivered = collectedNum > 0 || order.confirmL === "تم التسليم";
+
+        if (isDelivered) {
+          deliveredCount++;
+          totalCash += (collectedNum > 0 ? collectedNum : priceNum);
+          totalComm += (order.commissionR > 0 ? order.commissionR : defaultCommRate);
         }
+      });
 
-        function fetchOrders(isInitial = false) {
-            const selectedMonth = document.getElementById("appMonth").value;
-            const selectedDay = document.getElementById("appDay").value;
-            
-            if(!isInitial) {
-                document.getElementById("ordersContainer").innerHTML = `<div class="bg-[#131e32] p-8 rounded-2xl text-center text-slate-400 font-bold">جاري تحميل البيانات...</div>`;
-            }
+      const netAmount = totalCash - totalComm;
 
-            fetch(`${WEB_APP_URL}?rep=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&month=${encodeURIComponent(selectedMonth)}&day=${encodeURIComponent(selectedDay)}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === "success") {
-                        commissionRate = data.commission;
-                        ordersData = data.orders;
-                        if (isInitial) {
-                            document.getElementById("loginScreen").classList.add("hidden");
-                            document.getElementById("appScreen").classList.remove("hidden");
-                            document.getElementById("welcomeRep").innerText = `المندوب: ${currentRep}`;
-                            startLocationTracking(currentRep);
-                        }
-                        renderOrders();
-                    } else {
-                        if (isInitial) alert(data.message || "خطأ في بيانات الدخول");
-                        else document.getElementById("ordersContainer").innerHTML = `<div class="bg-[#131e32] border border-slate-700 p-8 rounded-2xl text-center text-red-400 font-bold">${data.message}</div>`;
-                    }
-                })
-                .catch(err => alert("خطأ في الاتصال بالخادم"));
-        }
+      document.getElementById("totalOrdersCount").innerText = totalCount;
+      document.getElementById("deliveredOrdersCount").innerText = deliveredCount;
+      document.getElementById("pendingOrdersCount").innerText = totalCount - deliveredCount;
+      document.getElementById("totalCashCollected").innerText = totalCash.toLocaleString() + " ج.م";
+      document.getElementById("totalCommission").innerText = totalComm.toLocaleString() + " ج.م";
+      document.getElementById("netToPay").innerText = netAmount.toLocaleString() + " ج.م";
+    }
 
-        function renderOrders() {
-            const container = document.getElementById("ordersContainer");
-            container.innerHTML = "";
+    function renderOrders() {
+      const listEl = document.getElementById("ordersList");
+      const sheetName = document.getElementById("sheetSelect").value;
+      listEl.innerHTML = "";
 
-            let totalCol = 0;
-            let deliveredCount = 0;
-            let remainingCount = 0;
+      recalculateTotals();
 
-            ordersData.forEach(o => {
-                if(o.statusK === "تم التسليم" || o.statusK === "مستلم") {
-                    totalCol += Number(o.price) || 0;
-                    deliveredCount++;
-                } else {
-                    remainingCount++;
-                }
-            });
+      if (currentOrdersCache.length === 0) {
+        listEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted);">لا توجد أوردرات مسجلة لك في ورقة (${sheetName}) حالياً.</div>`;
+        return;
+      }
 
-            document.getElementById("totalOrders").innerText = ordersData.length;
-            document.getElementById("deliveredOrdersCount").innerText = deliveredCount;
-            document.getElementById("remainingOrdersCount").innerText = remainingCount;
-            document.getElementById("totalCollection").innerText = totalCol + " ج.م";
-            document.getElementById("totalCommission").innerText = (deliveredCount * commissionRate) + " ج.م";
-            document.getElementById("netToDeliver").innerText = (totalCol - (deliveredCount * commissionRate)) + " ج.م";
+      currentOrdersCache.forEach(order => {
+        const phone = formatEgyptianPhone(order.phone);
+        const waPhone = phone.startsWith("0") ? "2" + phone : phone;
+        const priceNum = parseFloat(order.price) || 0;
+        const collectedNum = parseFloat(order.collectedK) || 0;
 
-            const filtered = ordersData.filter(o => {
-                if (currentStatusFilter === "all") return true;
-                if (currentStatusFilter === "تم التسليم") return o.statusK === "تم التسليم" || o.statusK === "مستلم";
-                if (currentStatusFilter === "مرتجع") return o.statusK === "مرتجع" || (o.statusK !== "" && o.statusK !== "تم التسليم" && o.statusK !== "مؤجل" && o.statusK !== "تحت التسليم");
-                if (currentStatusFilter === "تحت التسليم") return o.statusK === "" || o.statusK === "تحت التسليم";
-                return true;
-            });
+        const isDelivered = collectedNum > 0 || order.confirmL === "تم التسليم";
+        const isReturned = order.confirmL === "مرتجع" || order.notesN === "مرتجع";
+        const statusType = isDelivered ? "delivered" : (isReturned ? "returned" : "pending");
 
-            if (filtered.length === 0) {
-                container.innerHTML = `<div class="bg-[#131e32] border border-slate-700 p-8 rounded-2xl text-center text-slate-400 font-bold">لا توجد أوردرات مطابقة لهذه الفلترة</div>`;
-                return;
-            }
+        // تطبيق الفلتر المختار
+        if (activeFilter !== "all" && activeFilter !== statusType) return;
 
-            // صيغة رسالة الواتساب المحدثة بدقة
-            const waMessage = `مساء الخير يا فندم, شركة اميال للشحن بنتواصل مع حضرتك لتأكيد الطلب الخاص بكم: \nلتأكيد الطلب و بدء عمليه الشحن\nبرجاء الرد بكلمه تأكيد\nو ارسال العنوان تفصيلي مع علامه مميزه بالعنوان (سوبرماركت / مدرسه / قهوه / مسجد ... ) او لوكيشن موقع الاستلام , و لو في رقم اضافي لحضرتك ممكن تبعته علشان المندوب يقدر يسلم حضرتك الطلب \nشكرا لزوق حضرتك`;
-            const encodedWa = encodeURIComponent(waMessage);
+        const fullAddress = [order.governorate, order.address].filter(Boolean).join(" - ");
+        const prefilledMsg = `أهلاً بحضرتك أ/ ${order.clientName}، مع حضرتك مندوب شركة أميال إكسبريس للشحن (${currentRep}). بخصوص أوردر (${order.sender}) بقيمة ${priceNum} جنيه، متواجد لتسليم الشحنة لحضرتك اليوم.`;
+        const encodedMsg = encodeURIComponent(prefilledMsg);
 
-            filtered.forEach((order, index) => {
-                const globalIndex = ordersData.indexOf(order);
-                const isReturnSelected = (order.statusK === "مرتجع" || (order.statusK !== "" && order.statusK !== "تم التسليم" && order.statusK !== "مؤجل" && order.statusK !== "تحت التسليم" && isNaN(order.statusK) === false));
+        const card = document.createElement("div");
+        card.className = `order-card ${statusType}`;
+        card.id = `card-${order.rowIndex}`;
+        card.innerHTML = `
+          <div class="client-row">
+            <h3 class="client-name">${order.clientName}</h3>
+            <span class="price-badge">${priceNum} ج.م</span>
+          </div>
+          <div class="info-line"><span>📍 العنوان:</span> ${fullAddress || "غير مسجل"}</div>
+          <div class="info-line"><span>📱 الهاتف:</span> <b dir="ltr">${phone}</b> | <span>🏢 الراسل:</span> ${order.sender}</div>
+          <div class="info-line"><span>💰 الوارد المسجل (K):</span> <b id="k-val-${order.rowIndex}" style="color:var(--success);">${collectedNum} ج.م</b></div>
 
-                const card = document.createElement("div");
-                card.className = `bg-[#131e32] border ${order.isLocked ? 'border-amber-500/50 bg-amber-500/5' : 'border-slate-700/80'} rounded-2xl p-4 shadow-lg`;
-                
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <span class="text-xs font-bold text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-xl">طلب #${order.rowIndex}</span>
-                            <span class="text-xs text-slate-400 mr-2 font-bold">${order.date || ''}</span>
-                        </div>
-                        <span class="font-extrabold text-white text-base">${order.price} ج.م</span>
-                    </div>
+          <div class="contact-actions">
+            <a href="tel:${phone}" class="c-btn btn-call">📞 اتصال</a>
+            <a href="https://wa.me/${waPhone}?text=${encodedMsg}" target="_blank" class="c-btn btn-wa">💬 واتساب</a>
+            <a href="sms:${phone}?body=${encodedMsg}" class="c-btn btn-sms">✉️ SMS</a>
+          </div>
 
-                    <div class="mb-3 space-y-2 text-xs">
-                        <h3 class="font-bold text-white text-sm"><i class="fa-solid fa-user text-cyan-400 ml-1"></i> ${order.clientName}</h3>
-                        <div class="text-slate-300 bg-[#0f172a] p-2.5 rounded-xl border border-slate-800">
-                            <span class="text-rose-400 font-bold">العنوان:</span> 
-                            <input type="text" id="addr_${globalIndex}" value="${order.address}" class="w-full bg-slate-800 text-white rounded p-1.5 mt-1 outline-none border border-slate-700 text-xs">
-                            <button onclick="saveLocalAddress(${globalIndex})" class="mt-2 bg-slate-700 hover:bg-slate-600 text-white px-3 py-1 rounded text-[11px] font-bold">حفظ العنوان محلياً</button>
-                        </div>
-                        <div class="text-slate-400 flex items-center justify-between">
-                            <span><i class="fa-solid fa-phone text-emerald-400 ml-1"></i> ${order.phone}</span>
-                            <span class="text-amber-400 font-bold">الورد المسجل (K): ${order.statusK || 'ارسل'}</span>
-                        </div>
-                    </div>
-                    
-                    ${order.isLocked ? '<div class="text-xs text-amber-300 bg-amber-500/10 p-2.5 rounded-xl mb-3 font-bold border border-amber-500/20"><i class="fa-solid fa-lock ml-1"></i> هذا الطلب مغلق بواسطة الإدارة/المحاسب ولا يمكن تعديله</div>' : ''}
+          <div class="status-controls">
+            <select id="select-${order.rowIndex}" class="status-select">
+              <option value="تحت التسليم" ${statusType === "pending" ? "selected" : ""}>⏳ تحت التسليم</option>
+              <option value="تم التسليم" ${statusType === "delivered" ? "selected" : ""}>✅ تم التسليم</option>
+              <option value="مرتجع" ${statusType === "returned" ? "selected" : ""}>❌ مرتجع</option>
+            </select>
+            <button id="btn-${order.rowIndex}" class="btn-save-status" onclick="submitOrderUpdate(${order.rowIndex}, ${priceNum}, '${sheetName}')">تأكيد</button>
+          </div>
+        `;
+        listEl.appendChild(card);
+      });
+    }
 
-                    <div class="grid grid-cols-2 gap-2 mb-3 bg-[#0f172a] p-3 rounded-xl border border-slate-800">
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-400 mb-1">حالة الطلب (K)</label>
-                            <select id="statusSelect_${globalIndex}" ${order.isLocked ? 'disabled' : ''} onchange="onStatusSelectChange(${globalIndex})" class="w-full bg-[#131e32] border border-slate-700 text-white text-xs font-bold rounded-xl p-2.5 outline-none">
-                                <option value="" ${order.statusK === '' ? 'selected' : ''}>تحت التسليم</option>
-                                <option value="تم التسليم" ${order.statusK === 'تم التسليم' || order.statusK === 'مستلم' ? 'selected' : ''}>تم التسليم</option>
-                                <option value="مرتجع" ${isReturnSelected ? 'selected' : ''}>مرتجع (كتابة مبلغ)</option>
-                                <option value="مؤجل" ${order.statusK === 'مؤجل' ? 'selected' : ''}>مؤجل</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-400 mb-1">خط (N)</label>
-                            <input type="text" id="lineN_${globalIndex}" value="${order.lineN}" ${order.isLocked ? 'disabled' : ''} onchange="updateOrderData(${globalIndex})" placeholder="خط..." class="w-full bg-[#131e32] border border-slate-700 text-white text-xs font-bold rounded-xl p-2.5 outline-none">
-                        </div>
+    async function submitOrderUpdate(rowIndex, price, sheetName) {
+      const statusVal = document.getElementById(`select-${rowIndex}`).value;
+      const btn = document.getElementById(`btn-${rowIndex}`);
+      
+      btn.disabled = true;
+      btn.innerText = "⏳...";
 
-                        <div id="returnBox_${globalIndex}" class="${isReturnSelected ? '' : 'hidden'} col-span-2 mt-2 pt-2 border-t border-slate-800">
-                            <label class="block text-[11px] font-bold text-rose-400 mb-1">قيمة المرتجع / رقم الوارد (K):</label>
-                            <div class="flex gap-2">
-                                <input type="number" id="returnPrice_${globalIndex}" value="${isReturnSelected && order.statusK !== 'مرتجع' ? order.statusK : ''}" ${order.isLocked ? 'disabled' : ''} placeholder="مثال: 50" class="w-full bg-[#131e32] border border-rose-500/50 text-white text-xs rounded-xl p-2 outline-none">
-                                <button type="button" ${order.isLocked ? 'disabled' : ''} onclick="saveReturnAmount(${globalIndex})" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-4 py-2 rounded-xl whitespace-nowrap">حفظ الرقم</button>
-                            </div>
-                        </div>
-                    </div>
+      try {
+        const url = `${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${price}`;
+        const res = await fetch(url);
+        const json = await res.json();
 
-                    <div class="flex items-center gap-2 pt-2 border-t border-slate-800">
-                        <a href="tel:${order.phone}" class="flex-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-center py-2.5 rounded-xl font-bold text-xs hover:bg-emerald-500/20"><i class="fa-solid fa-phone ml-1"></i> اتصال</a>
-                        <a href="https://wa.me/2${order.phone}?text=${encodedWa}" target="_blank" class="flex-1 bg-green-500/10 text-green-400 border border-green-500/20 text-center py-2.5 rounded-xl font-bold text-xs hover:bg-green-500/20"><i class="fa-brands fa-whatsapp ml-1"></i> واتساب</a>
-                        <a href="sms:${order.phone}?body=${encodedWa}" class="flex-1 bg-sky-500/10 text-sky-400 border border-sky-500/20 text-center py-2.5 rounded-xl font-bold text-xs hover:bg-sky-500/20"><i class="fa-solid fa-message ml-1"></i> SMS</a>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function saveLocalAddress(index) {
-            const newAddr = document.getElementById(`addr_${index}`).value;
-            ordersData[index].address = newAddr;
-            alert("✅ تم تحديث العنوان محلياً في التطبيق!");
-        }
-
-        function onStatusSelectChange(index) {
-            const val = document.getElementById(`statusSelect_${index}`).value;
-            const returnBox = document.getElementById(`returnBox_${index}`);
-
-            if (val === "مرتجع") {
-                returnBox.classList.remove("hidden");
-                ordersData[index].statusK = "مرتجع";
-                updateOrderData(index, "مرتجع");
+        if (json.status === "success") {
+          const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex);
+          if (orderObj) {
+            if (statusVal === "تم التسليم") {
+              orderObj.collectedK = price;
+              orderObj.confirmL = "تم التسليم";
+              orderObj.notesN = "تم التسليم";
+            } else if (statusVal === "مرتجع") {
+              orderObj.collectedK = 0;
+              orderObj.confirmL = "مرتجع";
+              orderObj.notesN = "مرتجع";
             } else {
-                returnBox.classList.add("hidden");
-                ordersData[index].statusK = val;
-                updateOrderData(index, val);
+              orderObj.collectedK = 0;
+              orderObj.confirmL = "";
+              orderObj.notesN = "مع المندوب";
             }
-        }
+          }
 
-        function saveReturnAmount(index) {
-            const amount = document.getElementById(`returnPrice_${index}`).value.trim();
-            const valToSave = amount !== "" ? amount : "مرتجع";
-            ordersData[index].statusK = valToSave;
-            updateOrderData(index, valToSave);
-            alert("✅ تم تسجيل مبلغ المرتجع (" + valToSave + ") بنجاح!");
+          btn.innerText = "✔ تم";
+          setTimeout(() => {
+            renderOrders();
+          }, 600);
+        } else {
+          alert(json.message || "حدث خطأ أثناء التحديث.");
+          btn.disabled = false;
+          btn.innerText = "تأكيد";
         }
-
-        function updateOrderData(index, overrideStatusK = null) {
-            const order = ordersData[index];
-            const statusK = overrideStatusK !== null ? overrideStatusK : order.statusK;
-            const lineN = document.getElementById(`lineN_${index}`).value;
-            const selectedMonth = document.getElementById("appMonth").value;
-
-            fetch(WEB_APP_URL, {
-                method: "POST",
-                body: JSON.stringify({
-                    month: selectedMonth,
-                    rowIndex: order.rowIndex,
-                    statusK: statusK,
-                    lineN: lineN
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status !== "success") {
-                    alert(data.message || "فشل التحديث");
-                    fetchOrders();
-                } else {
-                    renderOrders();
-                }
-            })
-            .catch(err => console.log(err));
-        }
-
-        function logout() {
-            location.reload();
-        }
-    </script>
+      } catch (e) {
+        alert("فشل الاتصال بالسيرفر.");
+        btn.disabled = false;
+        btn.innerText = "تأكيد";
+      }
+    }
+  </script>
 </body>
 </html>
