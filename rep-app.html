@@ -67,9 +67,7 @@
       background: linear-gradient(135deg, #0f172a, #1e293b);
       padding: 14px 16px;
       border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      position: sticky; top: 0; z-index: 100;
       box-shadow: 0 4px 15px rgba(0,0,0,0.4);
     }
     .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -80,27 +78,27 @@
       border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer;
     }
     
-    .control-bar { display: flex; gap: 8px; align-items: center; }
+    .control-bar { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 6px; align-items: center; }
     .rep-badge {
-      flex: 1; background: #0f172a; border: 1px solid var(--primary);
-      padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 800; color: #fff;
+      background: #0f172a; border: 1px solid var(--primary);
+      padding: 9px 8px; border-radius: 10px; font-size: 13px; font-weight: 800; color: #fff; text-align: center;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .sheet-select {
-      padding: 9px 10px; border-radius: 10px; border: 1px solid var(--border);
-      background: #0f172a; color: var(--primary); font-size: 13px; font-weight: bold;
+    .sheet-select, .day-select {
+      padding: 9px 6px; border-radius: 10px; border: 1px solid var(--border);
+      background: #0f172a; color: var(--primary); font-size: 12px; font-weight: bold; text-align: center;
     }
     .btn-refresh {
       background: var(--primary); color: #00111f; border: none;
-      padding: 9px 14px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 13px;
+      padding: 9px 12px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 12px;
     }
 
-    /* لوحة الحسابات والعمولة والصافي */
+    /* لوحة الحسابات المالية */
     .finance-panel {
       margin: 12px 14px;
       background: linear-gradient(145deg, #162032, #1e293b);
       border: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 16px;
-      padding: 14px;
+      border-radius: 16px; padding: 14px;
     }
     .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
     .money-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
@@ -108,17 +106,15 @@
       background: rgba(15, 23, 42, 0.75); padding: 10px 6px;
       border-radius: 10px; text-align: center; border: 1px solid var(--border);
     }
-    .sum-num { font-size: 16px; font-weight: 900; display: block; margin-bottom: 3px; }
+    .sum-num { font-size: 15px; font-weight: 900; display: block; margin-bottom: 3px; }
     .sum-lbl { font-size: 11px; color: var(--muted); }
 
     /* فلتر سريع للأوردرات */
-    .filter-tabs {
-      display: flex; gap: 6px; padding: 0 14px 12px; overflow-x: auto;
-    }
+    .filter-tabs { display: flex; gap: 6px; padding: 0 14px 12px; overflow-x: auto; }
     .f-tab {
-      flex: 1; padding: 8px; border-radius: 10px; border: 1px solid var(--border);
-      background: var(--card); color: var(--muted); font-size: 12px; font-weight: bold;
-      text-align: center; cursor: pointer;
+      flex: 1; padding: 8px 4px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--card); color: var(--muted); font-size: 11px; font-weight: bold;
+      text-align: center; cursor: pointer; white-space: nowrap;
     }
     .f-tab.active { background: var(--primary); color: #00111f; border-color: var(--primary); }
 
@@ -128,9 +124,11 @@
       background: var(--card); border-radius: 16px; padding: 15px;
       border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.25);
     }
-    .order-card.delivered { border-right: 5px solid var(--success); opacity: 0.9; }
+    .order-card.delivered { border-right: 5px solid var(--success); }
+    .order-card.partial { border-right: 5px solid #0ea5e9; }
     .order-card.returned { border-right: 5px solid var(--danger); opacity: 0.85; }
     .order-card.pending { border-right: 5px solid var(--warning); }
+    .order-card.locked { border-right: 5px solid #64748b; background: #161e2e; }
 
     .client-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
     .client-name { font-size: 16px; font-weight: 800; color: #fff; margin: 0; }
@@ -164,13 +162,19 @@
       background: var(--success); color: #002b11; border: none;
       padding: 0 18px; border-radius: 10px; font-weight: 900; font-size: 14px; cursor: pointer;
     }
-    .btn-save-status:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
+    .btn-save-status:disabled, .status-select:disabled { background: #334155; color: #64748b; border-color: #475569; cursor: not-allowed; }
+    
+    .partial-input-box { margin-top: 8px; display: none; }
+    .partial-input {
+      width: 100%; padding: 8px; background: #0f172a; border: 1px solid var(--primary);
+      color: #fff; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center;
+    }
     .loader { text-align: center; padding: 30px; color: var(--primary); font-weight: bold; display: none; }
   </style>
 </head>
 <body>
 
-  <!-- 1. شاشة تسجيل الدخول للمندوب -->
+  <!-- 1. شاشة تسجيل الدخول -->
   <div id="loginScreen" class="login-screen">
     <div class="login-card">
       <div class="app-logo">A</div>
@@ -185,7 +189,7 @@
     </div>
   </div>
 
-  <!-- 2. شاشة أوردرات وحسابات المندوب -->
+  <!-- 2. واجهة التطبيق -->
   <div id="appScreen">
     <div class="header">
       <div class="header-top">
@@ -193,21 +197,29 @@
         <button class="btn-logout" onclick="logoutRep()">🚪 خروج</button>
       </div>
       <div class="control-bar">
-        <div class="rep-badge">👤 <span id="activeRepLabel">---</span></div>
+        <div class="rep-badge" id="activeRepLabel">---</div>
         <select id="sheetSelect" class="sheet-select" onchange="loadAuthenticatedOrders()">
           <option value="1/11/2026">شهر 11</option>
           <option value="1/10/2026">شهر 10</option>
         </select>
-        <button class="btn-refresh" onclick="loadAuthenticatedOrders()">🔄 تحديث</button>
+        <select id="daySelect" class="day-select" onchange="renderOrders()">
+          <option value="all">كل الأيام</option>
+          <script>
+            for(let d=1; d<=31; d++) {
+              document.write(`<option value="${d}">يوم ${d}</option>`);
+            }
+          </script>
+        </select>
+        <button class="btn-refresh" onclick="loadAuthenticatedOrders()">🔄</button>
       </div>
     </div>
 
-    <!-- لوحة الحسابات المالية -->
+    <!-- لوحة الحسابات -->
     <div class="finance-panel">
       <div class="stats-row">
         <div class="sum-card">
           <span class="sum-num" id="totalOrdersCount" style="color:var(--primary);">0</span>
-          <span class="sum-lbl">إجمالي الأوردرات</span>
+          <span class="sum-lbl">الإجمالي</span>
         </div>
         <div class="sum-card">
           <span class="sum-num" id="deliveredOrdersCount" style="color:var(--success);">0</span>
@@ -215,7 +227,7 @@
         </div>
         <div class="sum-card">
           <span class="sum-num" id="pendingOrdersCount" style="color:var(--warning);">0</span>
-          <span class="sum-lbl">متبقي / مرتجع</span>
+          <span class="sum-lbl">متبقي</span>
         </div>
       </div>
 
@@ -230,7 +242,7 @@
         </div>
         <div class="sum-card" style="border-color: var(--success);">
           <span class="sum-num" id="netToPay" style="color:var(--success);">0</span>
-          <span class="sum-lbl">الصافي للتوريد</span>
+          <span class="sum-lbl">الصافي</span>
         </div>
       </div>
     </div>
@@ -240,10 +252,11 @@
       <div class="f-tab active" onclick="setFilter('all', this)">الكل</div>
       <div class="f-tab" onclick="setFilter('pending', this)">⏳ تحت التسليم</div>
       <div class="f-tab" onclick="setFilter('delivered', this)">✅ تم التسليم</div>
+      <div class="f-tab" onclick="setFilter('partial', this)">⚡ جزئي</div>
       <div class="f-tab" onclick="setFilter('returned', this)">❌ مرتجع</div>
     </div>
 
-    <div id="loader" class="loader">⏳ جاري تحميل أوردراتك المعتمدة...</div>
+    <div id="loader" class="loader">⏳ جاري التحميل...</div>
     <div class="orders-container" id="ordersList"></div>
   </div>
 
@@ -257,7 +270,6 @@
     let activeFilter = "all";
 
     window.onload = function() {
-      // التحقق إذا تم فتح التطبيق عبر رابط مخصص (?rep=...&pin=...)
       const urlParams = new URLSearchParams(window.location.search);
       const urlRep = urlParams.get("rep");
       const urlPin = urlParams.get("pin");
@@ -269,7 +281,6 @@
         return;
       }
 
-      // التحقق من وجود جلسة محفوظة مسبقاً على هاتف المندوب
       const savedRep = localStorage.getItem("amial_auth_rep");
       const savedPin = localStorage.getItem("amial_auth_pin");
       if (savedRep && savedPin) {
@@ -287,7 +298,7 @@
       const btn = document.getElementById("loginBtn");
 
       if (!repVal || !pinVal) {
-        errEl.innerText = "من فضلك أدخل اسم المندوب والكود السري!";
+        errEl.innerText = "أدخل اسم المندوب والكود السري!";
         return;
       }
 
@@ -321,7 +332,7 @@
       } catch (e) {
         btn.disabled = false;
         btn.innerText = "🔐 دخول وعرض الأوردرات";
-        errEl.innerText = "تعذر الاتصال بالسيرفر، تأكد من الإنترنت.";
+        errEl.innerText = "تعذر الاتصال بالسيرفر.";
       }
     }
 
@@ -334,9 +345,7 @@
     function logoutRep() {
       localStorage.removeItem("amial_auth_rep");
       localStorage.removeItem("amial_auth_pin");
-      currentRep = "";
-      currentPin = "";
-      currentOrdersCache = [];
+      currentRep = ""; currentPin = ""; currentOrdersCache = [];
       document.getElementById("appScreen").style.display = "none";
       document.getElementById("loginScreen").style.display = "flex";
       document.getElementById("loginPinInput").value = "";
@@ -359,7 +368,7 @@
           currentOrdersCache = data.orders || [];
           renderOrders();
         } else {
-          alert(data.message || "انتهت صلاحية الجلسة، يرجى تسجيل الدخول مجدداً.");
+          alert(data.message || "انتهت صلاحية الجلسة.");
           logoutRep();
         }
       } catch (e) {
@@ -381,58 +390,96 @@
       return clean;
     }
 
+    // التحقق مما إذا مرّ أكثر من 24 ساعة على الأوردر
+    function isOrderLockedByTime(orderDateStr) {
+      if (!orderDateStr) return false;
+      try {
+        const orderDate = new Date(orderDateStr);
+        if (isNaN(orderDate.getTime())) return false;
+        const diffHours = (new Date() - orderDate) / (1000 * 60 * 60);
+        return diffHours > 24;
+      } catch (e) {
+        return false;
+      }
+    }
+
     function recalculateTotals() {
-      let totalCount = currentOrdersCache.length;
+      const selectedDay = document.getElementById("daySelect").value;
+      let totalCount = 0;
       let deliveredCount = 0;
       let totalCash = 0;
       let totalComm = 0;
 
       currentOrdersCache.forEach(order => {
+        if (selectedDay !== "all") {
+          const rowDateStr = String(order.date || "");
+          if (!rowDateStr.includes(selectedDay)) return;
+        }
+        totalCount++;
+
         const collectedNum = parseFloat(order.collectedK) || 0;
         const priceNum = parseFloat(order.price) || 0;
-        const isDelivered = collectedNum > 0 || order.confirmL === "تم التسليم";
+        const isDel = collectedNum > 0 || order.confirmL === "تم التسليم" || order.confirmL === "جزئي";
 
-        if (isDelivered) {
+        if (isDel) {
           deliveredCount++;
           totalCash += (collectedNum > 0 ? collectedNum : priceNum);
           totalComm += (order.commissionR > 0 ? order.commissionR : defaultCommRate);
         }
       });
 
-      const netAmount = totalCash - totalComm;
-
       document.getElementById("totalOrdersCount").innerText = totalCount;
       document.getElementById("deliveredOrdersCount").innerText = deliveredCount;
       document.getElementById("pendingOrdersCount").innerText = totalCount - deliveredCount;
       document.getElementById("totalCashCollected").innerText = totalCash.toLocaleString() + " ج.م";
       document.getElementById("totalCommission").innerText = totalComm.toLocaleString() + " ج.م";
-      document.getElementById("netToPay").innerText = netAmount.toLocaleString() + " ج.م";
+      document.getElementById("netToPay").innerText = (totalCash - totalComm).toLocaleString() + " ج.م";
     }
 
     function renderOrders() {
       const listEl = document.getElementById("ordersList");
-      const sheetName = document.getElementById("sheetSelect").value;
+      const selectedDay = document.getElementById("daySelect").value;
       listEl.innerHTML = "";
 
       recalculateTotals();
 
-      if (currentOrdersCache.length === 0) {
-        listEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted);">لا توجد أوردرات مسجلة لك في ورقة (${sheetName}) حالياً.</div>`;
+      const filteredOrders = currentOrdersCache.filter(order => {
+        if (selectedDay !== "all") {
+          const rowDateStr = String(order.date || "");
+          if (!rowDateStr.includes(selectedDay)) return false;
+        }
+        return true;
+      });
+
+      if (filteredOrders.length === 0) {
+        listEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted);">لا توجد أوردرات مطابقة في هذا اليوم.</div>`;
         return;
       }
 
-      currentOrdersCache.forEach(order => {
+      filteredOrders.forEach(order => {
         const phone = formatEgyptianPhone(order.phone);
         const waPhone = phone.startsWith("0") ? "2" + phone : phone;
         const priceNum = parseFloat(order.price) || 0;
         const collectedNum = parseFloat(order.collectedK) || 0;
 
-        const isDelivered = collectedNum > 0 || order.confirmL === "تم التسليم";
-        const isReturned = order.confirmL === "مرتجع" || order.notesN === "مرتجع";
-        const statusType = isDelivered ? "delivered" : (isReturned ? "returned" : "pending");
+        const isDelivered = order.confirmL === "تم التسليم" || (collectedNum === priceNum && collectedNum > 0);
+        const isPartial = order.confirmL === "جزئي" || (collectedNum > 0 && collectedNum < priceNum);
+        const isReturned = order.confirmL === "مرتجع";
+        
+        let statusType = "pending";
+        if (isDelivered) statusType = "delivered";
+        else if (isPartial) statusType = "partial";
+        else if (isReturned) statusType = "returned";
 
-        // تطبيق الفلتر المختار
-        if (activeFilter !== "all" && activeFilter !== statusType) return;
+        // التحقق من قفل الـ 24 ساعة
+        const timeLocked = isOrderLockedByTime(order.date);
+        if (timeLocked) statusType = "locked";
+
+        if (activeFilter !== "all" && activeFilter !== statusType && !(activeFilter === "delivered" && isDelivered)) {
+          if (activeFilter === "pending" && (isDelivered || isPartial || isReturned)) return;
+          if (activeFilter === "partial" && !isPartial) return;
+          if (activeFilter === "returned" && !isReturned) return;
+        }
 
         const fullAddress = [order.governorate, order.address].filter(Boolean).join(" - ");
         const prefilledMsg = `أهلاً بحضرتك أ/ ${order.clientName}، مع حضرتك مندوب شركة أميال إكسبريس للشحن (${currentRep}). بخصوص أوردر (${order.sender}) بقيمة ${priceNum} جنيه، متواجد لتسليم الشحنة لحضرتك اليوم.`;
@@ -440,7 +487,6 @@
 
         const card = document.createElement("div");
         card.className = `order-card ${statusType}`;
-        card.id = `card-${order.rowIndex}`;
         card.innerHTML = `
           <div class="client-row">
             <h3 class="client-name">${order.clientName}</h3>
@@ -448,7 +494,9 @@
           </div>
           <div class="info-line"><span>📍 العنوان:</span> ${fullAddress || "غير مسجل"}</div>
           <div class="info-line"><span>📱 الهاتف:</span> <b dir="ltr">${phone}</b> | <span>🏢 الراسل:</span> ${order.sender}</div>
-          <div class="info-line"><span>💰 الوارد المسجل (K):</span> <b id="k-val-${order.rowIndex}" style="color:var(--success);">${collectedNum} ج.م</b></div>
+          <div class="info-line"><span>📅 التاريخ:</span> ${order.date || "غير محدد"}</div>
+          <div class="info-line"><span>💰 الوارد المسجل (K):</span> <b style="color:var(--success);">${collectedNum} ج.م</b></div>
+          ${timeLocked ? '<div class="info-line" style="color:var(--danger);"><b>🔒 تم قفل التعديل لمرور أكثر من 24 ساعة.</b></div>' : ''}
 
           <div class="contact-actions">
             <a href="tel:${phone}" class="c-btn btn-call">📞 اتصال</a>
@@ -457,52 +505,63 @@
           </div>
 
           <div class="status-controls">
-            <select id="select-${order.rowIndex}" class="status-select">
+            <select id="select-${order.rowIndex}" class="status-select" ${timeLocked ? 'disabled' : ''} onchange="togglePartialInput(${order.rowIndex})">
               <option value="تحت التسليم" ${statusType === "pending" ? "selected" : ""}>⏳ تحت التسليم</option>
-              <option value="تم التسليم" ${statusType === "delivered" ? "selected" : ""}>✅ تم التسليم</option>
-              <option value="مرتجع" ${statusType === "returned" ? "selected" : ""}>❌ مرتجع</option>
+              <option value="تم التسليم" ${isDelivered ? "selected" : ""}>✅ تم التسليم</option>
+              <option value="جزئي" ${isPartial ? "selected" : ""}>⚡ جزئي</option>
+              <option value="مرتجع" ${isReturned ? "selected" : ""}>❌ مرتجع</option>
             </select>
-            <button id="btn-${order.rowIndex}" class="btn-save-status" onclick="submitOrderUpdate(${order.rowIndex}, ${priceNum}, '${sheetName}')">تأكيد</button>
+            <button id="btn-${order.rowIndex}" class="btn-save-status" ${timeLocked ? 'disabled' : ''} onclick="submitOrderUpdate(${order.rowIndex}, ${priceNum})">تأكيد</button>
+          </div>
+
+          <div id="partialBox-${order.rowIndex}" class="partial-input-box" style="display: ${isPartial ? 'block' : 'none'};">
+            <input type="number" id="partialVal-${order.rowIndex}" class="partial-input" placeholder="أدخل المبلغ المحصل فعلياً (ج.م)" value="${isPartial ? collectedNum : ''}" />
           </div>
         `;
         listEl.appendChild(card);
       });
     }
 
-    async function submitOrderUpdate(rowIndex, price, sheetName) {
+    function togglePartialInput(rowIndex) {
+      const val = document.getElementById(`select-${rowIndex}`).value;
+      const box = document.getElementById(`partialBox-${rowIndex}`);
+      box.style.display = (val === "جزئي") ? "block" : "none";
+    }
+
+    async function submitOrderUpdate(rowIndex, originalPrice) {
       const statusVal = document.getElementById(`select-${rowIndex}`).value;
+      const sheetName = document.getElementById("sheetSelect").value;
       const btn = document.getElementById(`btn-${rowIndex}`);
       
+      let finalCollected = 0;
+      if (statusVal === "تم التسليم") finalCollected = originalPrice;
+      else if (statusVal === "جزئي") {
+        const partialInput = document.getElementById(`partialVal-${rowIndex}`).value;
+        finalCollected = parseFloat(partialInput) || 0;
+        if (finalCollected <= 0 || finalCollected >= originalPrice) {
+          alert("من فضلك أدخل مبلغ جزئي صحيح (أقل من قيمة الأوردر وأكبر من صفر).");
+          return;
+        }
+      } else if (statusVal === "مرتجع") {
+        finalCollected = 0;
+      }
+
       btn.disabled = true;
       btn.innerText = "⏳...";
 
       try {
-        const url = `${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${price}`;
+        const url = `${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${finalCollected}`;
         const res = await fetch(url);
         const json = await res.json();
 
         if (json.status === "success") {
           const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex);
           if (orderObj) {
-            if (statusVal === "تم التسليم") {
-              orderObj.collectedK = price;
-              orderObj.confirmL = "تم التسليم";
-              orderObj.notesN = "تم التسليم";
-            } else if (statusVal === "مرتجع") {
-              orderObj.collectedK = 0;
-              orderObj.confirmL = "مرتجع";
-              orderObj.notesN = "مرتجع";
-            } else {
-              orderObj.collectedK = 0;
-              orderObj.confirmL = "";
-              orderObj.notesN = "مع المندوب";
-            }
+            orderObj.collectedK = finalCollected;
+            orderObj.confirmL = statusVal;
           }
-
           btn.innerText = "✔ تم";
-          setTimeout(() => {
-            renderOrders();
-          }, 600);
+          setTimeout(() => renderOrders(), 600);
         } else {
           alert(json.message || "حدث خطأ أثناء التحديث.");
           btn.disabled = false;
@@ -511,7 +570,7 @@
       } catch (e) {
         alert("فشل الاتصال بالسيرفر.");
         btn.disabled = false;
-        btn.innerText = "تأكيد";
+        btn.innerText = "تأكيدة";
       }
     }
   </script>
