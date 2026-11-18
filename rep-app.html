@@ -20,109 +20,79 @@
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
     body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 40px; }
 
-    /* شاشة تسجيل الدخول */
     .login-screen {
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
+      min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px;
       background: radial-gradient(circle at top, #1e293b, #0b1120 70%);
     }
     .login-card {
-      background: var(--card);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 20px;
-      padding: 28px 22px;
-      width: 100%;
-      max-width: 380px;
-      text-align: center;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+      background: var(--card); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px;
+      padding: 28px 22px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
     }
     .app-logo {
-      width: 64px; height: 64px; border-radius: 18px;
-      background: linear-gradient(135deg, #38bdf8, #22c55e);
-      display: grid; place-items: center; font-size: 28px; font-weight: 900;
-      color: #00111f; margin: 0 auto 14px;
+      width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(135deg, #38bdf8, #22c55e);
+      display: grid; place-items: center; font-size: 28px; font-weight: 900; color: #00111f; margin: 0 auto 14px;
     }
     .login-title { font-size: 20px; font-weight: 800; margin: 0 0 6px; color: #fff; }
     .login-sub { font-size: 13px; color: var(--muted); margin: 0 0 20px; }
     .auth-input {
-      width: 100%; padding: 13px 14px; margin-bottom: 12px;
-      border-radius: 12px; border: 1px solid var(--border);
-      background: #0f172a; color: #fff; font-size: 15px; font-weight: bold;
-      text-align: center;
+      width: 100%; padding: 13px 14px; margin-bottom: 12px; border-radius: 12px;
+      border: 1px solid var(--border); background: #0f172a; color: #fff; font-size: 15px; font-weight: bold; text-align: center;
     }
     .auth-input:focus { outline: none; border-color: var(--primary); }
     .btn-login {
       width: 100%; padding: 14px; border: none; border-radius: 12px;
-      background: linear-gradient(135deg, #38bdf8, #0284c7);
-      color: #00111f; font-size: 16px; font-weight: 900; cursor: pointer;
+      background: linear-gradient(135deg, #38bdf8, #0284c7); color: #00111f; font-size: 16px; font-weight: 900; cursor: pointer;
     }
     .login-error { color: var(--danger); font-size: 13px; font-weight: bold; margin-top: 12px; min-height: 20px; }
 
-    /* واجهة التطبيق بعد الدخول */
     #appScreen { display: none; }
     .header {
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 100;
+      background: linear-gradient(135deg, #0f172a, #1e293b); padding: 14px 16px;
+      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
       box-shadow: 0 4px 15px rgba(0,0,0,0.4);
     }
     .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .brand-title { font-size: 16px; font-weight: 800; color: var(--primary); margin: 0; }
     .btn-logout {
-      background: rgba(239, 68, 68, 0.15); color: var(--danger);
-      border: 1px solid rgba(239, 68, 68, 0.3); padding: 5px 10px;
-      border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer;
+      background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer;
     }
     
     .control-bar { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 6px; align-items: center; }
     .rep-badge {
-      background: #0f172a; border: 1px solid var(--primary);
-      padding: 9px 8px; border-radius: 10px; font-size: 13px; font-weight: 800; color: #fff; text-align: center;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      background: #0f172a; border: 1px solid var(--primary); padding: 9px 8px; border-radius: 10px;
+      font-size: 13px; font-weight: 800; color: #fff; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .sheet-select, .day-select {
       padding: 9px 6px; border-radius: 10px; border: 1px solid var(--border);
       background: #0f172a; color: var(--primary); font-size: 12px; font-weight: bold; text-align: center;
     }
     .btn-refresh {
-      background: var(--primary); color: #00111f; border: none;
-      padding: 9px 12px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 12px;
+      background: var(--primary); color: #00111f; border: none; padding: 9px 12px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 12px;
     }
 
-    /* لوحة الحسابات المالية */
     .finance-panel {
-      margin: 12px 14px;
-      background: linear-gradient(145deg, #162032, #1e293b);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 16px; padding: 14px;
+      margin: 12px 14px; background: linear-gradient(145deg, #162032, #1e293b);
+      border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px; padding: 14px;
     }
     .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
     .money-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
     .sum-card {
-      background: rgba(15, 23, 42, 0.75); padding: 10px 6px;
-      border-radius: 10px; text-align: center; border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.75); padding: 10px 6px; border-radius: 10px; text-align: center; border: 1px solid var(--border);
     }
     .sum-num { font-size: 15px; font-weight: 900; display: block; margin-bottom: 3px; }
     .sum-lbl { font-size: 11px; color: var(--muted); }
 
-    /* فلتر سريع للأوردرات */
     .filter-tabs { display: flex; gap: 6px; padding: 0 14px 12px; overflow-x: auto; }
     .f-tab {
       flex: 1; padding: 8px 4px; border-radius: 10px; border: 1px solid var(--border);
-      background: var(--card); color: var(--muted); font-size: 11px; font-weight: bold;
-      text-align: center; cursor: pointer; white-space: nowrap;
+      background: var(--card); color: var(--muted); font-size: 11px; font-weight: bold; text-align: center; cursor: pointer; white-space: nowrap;
     }
     .f-tab.active { background: var(--primary); color: #00111f; border-color: var(--primary); }
 
-    /* كروت الأوردرات */
     .orders-container { padding: 0 14px; display: grid; gap: 14px; }
     .order-card {
-      background: var(--card); border-radius: 16px; padding: 15px;
-      border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      background: var(--card); border-radius: 16px; padding: 15px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.25);
     }
     .order-card.delivered { border-right: 5px solid var(--success); }
     .order-card.partial { border-right: 5px solid #0ea5e9; }
@@ -133,9 +103,8 @@
     .client-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
     .client-name { font-size: 16px; font-weight: 800; color: #fff; margin: 0; }
     .price-badge {
-      background: rgba(56, 189, 248, 0.15); color: var(--primary);
-      padding: 4px 11px; border-radius: 999px; font-weight: 900; font-size: 14px;
-      border: 1px solid rgba(56, 189, 248, 0.3);
+      background: rgba(56, 189, 248, 0.15); color: var(--primary); padding: 4px 11px;
+      border-radius: 999px; font-weight: 900; font-size: 14px; border: 1px solid rgba(56, 189, 248, 0.3);
     }
 
     .info-line { font-size: 13px; color: #cbd5e1; margin: 5px 0; line-height: 1.5; }
@@ -144,8 +113,7 @@
     .contact-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
     .c-btn {
       display: flex; align-items: center; justify-content: center; gap: 5px;
-      padding: 9px 6px; border-radius: 10px; text-decoration: none;
-      font-size: 13px; font-weight: bold; color: #fff;
+      padding: 9px 6px; border-radius: 10px; text-decoration: none; font-size: 13px; font-weight: bold; color: #fff;
     }
     .btn-call { background: #2563eb; }
     .btn-wa { background: var(--whatsapp); color: #002b11; }
@@ -159,8 +127,7 @@
       color: #fff; border: 1px solid var(--primary); font-size: 13px; font-weight: bold;
     }
     .btn-save-status {
-      background: var(--success); color: #002b11; border: none;
-      padding: 0 18px; border-radius: 10px; font-weight: 900; font-size: 14px; cursor: pointer;
+      background: var(--success); color: #002b11; border: none; padding: 0 18px; border-radius: 10px; font-weight: 900; font-size: 14px; cursor: pointer;
     }
     .btn-save-status:disabled, .status-select:disabled { background: #334155; color: #64748b; border-color: #475569; cursor: not-allowed; }
     
@@ -174,7 +141,6 @@
 </head>
 <body>
 
-  <!-- 1. شاشة تسجيل الدخول -->
   <div id="loginScreen" class="login-screen">
     <div class="login-card">
       <div class="app-logo">A</div>
@@ -189,7 +155,6 @@
     </div>
   </div>
 
-  <!-- 2. واجهة التطبيق -->
   <div id="appScreen">
     <div class="header">
       <div class="header-top">
@@ -214,7 +179,6 @@
       </div>
     </div>
 
-    <!-- لوحة الحسابات -->
     <div class="finance-panel">
       <div class="stats-row">
         <div class="sum-card">
@@ -247,7 +211,6 @@
       </div>
     </div>
 
-    <!-- أزرار الفلترة -->
     <div class="filter-tabs">
       <div class="f-tab active" onclick="setFilter('all', this)">الكل</div>
       <div class="f-tab" onclick="setFilter('pending', this)">⏳ تحت التسليم</div>
@@ -352,7 +315,7 @@
     }
 
     async function loadAuthenticatedOrders() {
-      const sheetName = document.getElementById("sheetSelect").value;
+      const sheetName = document.getElementById("sheetSelect.value") || document.getElementById("sheetSelect").value;
       document.getElementById("loader").style.display = "block";
       document.getElementById("ordersList").innerHTML = "";
 
@@ -390,17 +353,23 @@
       return clean;
     }
 
-    // التحقق مما إذا مرّ أكثر من 24 ساعة على الأوردر
-    function isOrderLockedByTime(orderDateStr) {
-      if (!orderDateStr) return false;
-      try {
-        const orderDate = new Date(orderDateStr);
-        if (isNaN(orderDate.getTime())) return false;
-        const diffHours = (new Date() - orderDate) / (1000 * 60 * 60);
-        return diffHours > 24;
-      } catch (e) {
-        return false;
+    // استخراج رقم اليوم بدقة من أي صيغة تاريخ في الشيت (مثل Sun Nov 15 2026 أو 18/11/2026)
+    function extractDayFromDate(dateStr) {
+      if (!dateStr) return "";
+      const str = String(dateStr);
+      // إذا كان التاريخ يحتوي على صيغة يوم شهر سنة مثل "Nov 15" أو "15/11"
+      const match = str.match(/\b([0-9]{1,2})\b/);
+      if (match) {
+        // نبحث عن رقم اليوم (إذا كان هناك رقم بين 1 و 31)
+        const parts = str.split(/[\/\-\s]/);
+        for (let p of parts) {
+          let num = parseInt(p, 10);
+          if (num >= 1 && num <= 31) {
+            return String(num);
+          }
+        }
       }
+      return "";
     }
 
     function recalculateTotals() {
@@ -412,8 +381,8 @@
 
       currentOrdersCache.forEach(order => {
         if (selectedDay !== "all") {
-          const rowDateStr = String(order.date || "");
-          if (!rowDateStr.includes(selectedDay)) return;
+          const orderDay = extractDayFromDate(order.date);
+          if (orderDay !== selectedDay) return;
         }
         totalCount++;
 
@@ -445,14 +414,14 @@
 
       const filteredOrders = currentOrdersCache.filter(order => {
         if (selectedDay !== "all") {
-          const rowDateStr = String(order.date || "");
-          if (!rowDateStr.includes(selectedDay)) return false;
+          const orderDay = extractDayFromDate(order.date);
+          if (orderDay !== selectedDay) return false;
         }
         return true;
       });
 
       if (filteredOrders.length === 0) {
-        listEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted);">لا توجد أوردرات مطابقة في هذا اليوم.</div>`;
+        listEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted);">لا توجد أوردرات مطابقة في هذا اليوم (${selectedDay === 'all' ? 'الكل' : selectedDay}).</div>`;
         return;
       }
 
@@ -471,9 +440,8 @@
         else if (isPartial) statusType = "partial";
         else if (isReturned) statusType = "returned";
 
-        // التحقق من قفل الـ 24 ساعة
-        const timeLocked = isOrderLockedByTime(order.date);
-        if (timeLocked) statusType = "locked";
+        // تم إلغاء قفل الـ 24 ساعة مؤقتاً بناءً على طلبك لكي تستطيع التعديل براحتك
+        const timeLocked = false; 
 
         if (activeFilter !== "all" && activeFilter !== statusType && !(activeFilter === "delivered" && isDelivered)) {
           if (activeFilter === "pending" && (isDelivered || isPartial || isReturned)) return;
@@ -496,7 +464,6 @@
           <div class="info-line"><span>📱 الهاتف:</span> <b dir="ltr">${phone}</b> | <span>🏢 الراسل:</span> ${order.sender}</div>
           <div class="info-line"><span>📅 التاريخ:</span> ${order.date || "غير محدد"}</div>
           <div class="info-line"><span>💰 الوارد المسجل (K):</span> <b style="color:var(--success);">${collectedNum} ج.م</b></div>
-          ${timeLocked ? '<div class="info-line" style="color:var(--danger);"><b>🔒 تم قفل التعديل لمرور أكثر من 24 ساعة.</b></div>' : ''}
 
           <div class="contact-actions">
             <a href="tel:${phone}" class="c-btn btn-call">📞 اتصال</a>
@@ -505,13 +472,13 @@
           </div>
 
           <div class="status-controls">
-            <select id="select-${order.rowIndex}" class="status-select" ${timeLocked ? 'disabled' : ''} onchange="togglePartialInput(${order.rowIndex})">
+            <select id="select-${order.rowIndex}" class="status-select" onchange="togglePartialInput(${order.rowIndex})">
               <option value="تحت التسليم" ${statusType === "pending" ? "selected" : ""}>⏳ تحت التسليم</option>
               <option value="تم التسليم" ${isDelivered ? "selected" : ""}>✅ تم التسليم</option>
               <option value="جزئي" ${isPartial ? "selected" : ""}>⚡ جزئي</option>
               <option value="مرتجع" ${isReturned ? "selected" : ""}>❌ مرتجع</option>
             </select>
-            <button id="btn-${order.rowIndex}" class="btn-save-status" ${timeLocked ? 'disabled' : ''} onclick="submitOrderUpdate(${order.rowIndex}, ${priceNum})">تأكيد</button>
+            <button id="btn-${order.rowIndex}" class="btn-save-status" onclick="submitOrderUpdate(${order.rowIndex}, ${priceNum})">تأكيد</button>
           </div>
 
           <div id="partialBox-${order.rowIndex}" class="partial-input-box" style="display: ${isPartial ? 'block' : 'none'};">
@@ -570,7 +537,7 @@
       } catch (e) {
         alert("فشل الاتصال بالسيرفر.");
         btn.disabled = false;
-        btn.innerText = "تأكيدة";
+        btn.innerText = "تأكيد";
       }
     }
   </script>
