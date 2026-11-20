@@ -130,7 +130,6 @@
     }
     .loader { text-align: center; padding: 30px; color: var(--primary); font-weight: bold; display: none; }
 
-    /* النافذة المنبثقة الصغيرة (Modal) لإدخال السعر (K) والملاحظات (N) */
     .modal-backdrop {
       display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.78);
       backdrop-filter: blur(3px); z-index: 999; justify-content: center; align-items: center; padding: 16px;
@@ -168,7 +167,7 @@
       <h1 class="login-title">AMIAl EXPRESS</h1>
       <p class="login-sub">بوابة المناديب الذكية - سجل الدخول لعرض أوردراتك</p>
 
-      <input type="text" id="loginRepInput" class="auth-input" placeholder="اسم المندوب (مثال: ماهر18)" />
+      <input type="text" id="loginRepInput" class="auth-input" placeholder="اسم المندوب (مثال: حبيبة)" />
       <input type="password" id="loginPinInput" class="auth-input" inputmode="numeric" placeholder="الكود السري (PIN)" />
 
       <button id="loginBtn" class="btn-login" onclick="attemptLogin()">🔐 دخول وعرض الأوردرات</button>
@@ -251,7 +250,7 @@
       <p id="modalSub" class="modal-sub">أدخل السعر (عمود K) والملاحظات (عمود N)</p>
 
       <label class="modal-label" for="modalPriceInput">السعر / المبلغ (يسمّع في عمود K):</label>
-      <input type="number" id="modalPriceInput" class="modal-input" inputmode="decimal" placeholder="مثال: 500 أو 0" />
+      <input type="number" id="modalPriceInput" class="modal-input" inputmode="decimal" placeholder="مثال: 500" />
 
       <label class="modal-label" for="modalNotesInput">الملاحظات (تسمّع في عمود N):</label>
       <input type="text" id="modalNotesInput" class="modal-input" placeholder="اكتب ملاحظاتك هنا..." />
@@ -271,8 +270,6 @@
     let currentOrdersCache = [];
     let defaultCommRate = 25;
     let activeFilter = "all";
-
-    // بيانات النافذة المنبثقة الحالية
     let pendingModalData = null;
 
     window.onload = function () {
@@ -398,18 +395,13 @@
       return clean;
     }
 
-    // قراءة اليوم من عمود X (date) بدقة سواء كان تاريخاً (مثل 18/11/2026) أو رقماً
     function extractDayFromColumnX(dateVal) {
       if (!dateVal) return "";
       const str = String(dateVal).trim();
-
-      // إذا كان بصيغة يوم/شهر/سنة أو يوم-شهر-سنة مثل 18/11/2026
       const slashMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
       if (slashMatch) {
         return String(parseInt(slashMatch[1], 10));
       }
-
-      // إذا كان نصاً يحتوي على أجزاء مفصولة بمسافات أو شرطات
       const parts = str.split(/[\s\/\-]+/);
       for (let p of parts) {
         const num = parseInt(p, 10);
@@ -417,8 +409,18 @@
           return String(num);
         }
       }
-
       return "";
+    }
+
+    function getOrderStatusType(order) {
+      const priceNum = parseFloat(order.price) || 0;
+      const collectedNum = parseFloat(order.collectedK) || 0;
+      const confirmL = String(order.confirmL || "").trim();
+
+      if (confirmL === "مرتجع") return "returned";
+      if (confirmL === "جزئي" || (collectedNum > 0 && priceNum > 0 && collectedNum < priceNum)) return "partial";
+      if (confirmL === "تم التسليم" || (collectedNum > 0 && priceNum > 0 && collectedNum >= priceNum)) return "delivered";
+      return "pending";
     }
 
     function getOrdersBySelectedDay() {
@@ -439,12 +441,13 @@
 
       dayOrders.forEach(order => {
         const collectedNum = parseFloat(order.collectedK) || 0;
-        const priceNum = parseFloat(order.price) || 0;
-        const isDel = collectedNum > 0 || order.confirmL === "تم التسليم" || order.confirmL === "جزئي";
+        const statusType = getOrderStatusType(order);
 
-        if (isDel) {
+        if (collectedNum > 0) {
+          totalCash += collectedNum;
+        }
+        if (statusType === "delivered" || statusType === "partial" || collectedNum > 0) {
           deliveredCount++;
-          totalCash += (collectedNum > 0 ? collectedNum : priceNum);
           totalComm += (order.commissionR > 0 ? order.commissionR : defaultCommRate);
         }
       });
@@ -465,63 +468,54 @@
       const dayOrders = getOrdersBySelectedDay();
       recalculateTotals(dayOrders);
 
-      if (dayOrders.length === 0) {
+      const filteredOrders = dayOrders.filter(order => {
+        const statusType = getOrderStatusType(order);
+        if (activeFilter === "all") return true;
+        return statusType === activeFilter;
+      });
+
+      if (filteredOrders.length === 0) {
         const dayLabel = selectedDay === "all" ? "كل الأيام" : `يوم ${selectedDay}`;
-        listEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted);">لا توجد أوردرات مطابقة في (${dayLabel}) بناءً على عمود X.</div>`;
+        listEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted);">لا توجد أوردرات مطابقة للفلترة في (${dayLabel}).</div>`;
         return;
       }
 
-      dayOrders.forEach(order => {
+      filteredOrders.forEach(order => {
         const phone = formatEgyptianPhone(order.phone);
         const waPhone = phone.startsWith("0") ? "2" + phone : phone;
         const priceNum = parseFloat(order.price) || 0;
         const collectedNum = parseFloat(order.collectedK) || 0;
-
-        const isDelivered = order.confirmL === "تم التسليم" || (collectedNum === priceNum && collectedNum > 0);
-        const isPartial = order.confirmL === "جزئي" || (collectedNum > 0 && collectedNum < priceNum);
-        const isReturned = order.confirmL === "مرتجع";
-
-        let statusType = "pending";
-        if (isDelivered) statusType = "delivered";
-        else if (isPartial) statusType = "partial";
-        else if (isReturned) statusType = "returned";
-
-        if (activeFilter !== "all") {
-          if (activeFilter === "delivered" && !isDelivered) return;
-          if (activeFilter === "partial" && !isPartial) return;
-          if (activeFilter === "returned" && !isReturned) return;
-          if (activeFilter === "pending" && (isDelivered || isPartial || isReturned)) return;
-        }
+        const statusType = getOrderStatusType(order);
 
         const fullAddress = [order.governorate, order.address].filter(Boolean).join(" - ");
-        const prefilledMsg = `أهلاً بحضرتك أ/ ${order.clientName}، مع حضرتك مندوب شركة أميال إكسبريس للشحن (${currentRep}). بخصوص أوردر (${order.sender}) بقيمة ${priceNum} جنيه، متواجد لتسليم الشحنة لحضرتك اليوم.`;
+        const prefilledMsg = `أهلاً بحضرتك أ/ ${order.clientName}، مع حضرتك مندوب شركة أميال إكسبريس للشحن (${currentRep}). بخصوص أوردر (${order.sender || "أميال"}) بقيمة ${priceNum} جنيه، متواجد لتسليم الشحنة لحضرتك اليوم.`;
         const encodedMsg = encodeURIComponent(prefilledMsg);
 
         const card = document.createElement("div");
         card.className = `order-card ${statusType}`;
         card.innerHTML = `
           <div class="client-row">
-            <h3 class="client-name">${order.clientName}</h3>
+            <h3 class="client-name">${order.clientName || "بدون اسم"}</h3>
             <span class="price-badge">${priceNum} ج.م</span>
           </div>
           <div class="info-line"><span>📍 العنوان:</span> ${fullAddress || "غير مسجل"}</div>
-          <div class="info-line"><span>📱 الهاتف:</span> <b dir="ltr">${phone}</b> | <span>🏢 الراسل:</span> ${order.sender}</div>
+          <div class="info-line"><span>📱 الهاتف:</span> <b dir="ltr">${phone || "غير مسجل"}</b> | <span>🏷️ الكود:</span> ${order.sender || "-"}</div>
           <div class="info-line"><span>📅 التاريخ (X):</span> ${order.date || "غير محدد"}</div>
           <div class="info-line"><span>💰 الوارد المسجل (K):</span> <b style="color:var(--success);">${collectedNum} ج.م</b></div>
           ${order.notesN ? `<div class="info-line"><span>📝 ملاحظات (N):</span> ${order.notesN}</div>` : ''}
 
           <div class="contact-actions">
-            <a href="tel:${phone}" class="c-btn btn-call">📞 اتصال</a>
-            <a href="https://wa.me/${waPhone}?text=${encodedMsg}" target="_blank" class="c-btn btn-wa">💬 واتساب</a>
-            <a href="sms:${phone}?body=${encodedMsg}" class="c-btn btn-sms">✉️ SMS</a>
+            <a href="${phone ? `tel:${phone}` : '#'}" class="c-btn btn-call">📞 اتصال</a>
+            <a href="${waPhone ? `https://wa.me/${waPhone}?text=${encodedMsg}` : '#'}" target="_blank" class="c-btn btn-wa">💬 واتساب</a>
+            <a href="${phone ? `sms:${phone}?body=${encodedMsg}` : '#'}" class="c-btn btn-sms">✉️ SMS</a>
           </div>
 
           <div class="status-controls">
             <select id="select-${order.rowIndex}" class="status-select" onchange="handleStatusChoice(${order.rowIndex}, ${priceNum})">
               <option value="تحت التسليم" ${statusType === "pending" ? "selected" : ""}>⏳ تحت التسليم</option>
-              <option value="تم التسليم" ${isDelivered ? "selected" : ""}>✅ تم التسليم</option>
-              <option value="جزئي" ${isPartial ? "selected" : ""}>⚡ جزئي</option>
-              <option value="مرتجع" ${isReturned ? "selected" : ""}>❌ مرتجع</option>
+              <option value="تم التسليم" ${statusType === "delivered" ? "selected" : ""}>✅ تم التسليم</option>
+              <option value="جزئي" ${statusType === "partial" ? "selected" : ""}>⚡ جزئي</option>
+              <option value="مرتجع" ${statusType === "returned" ? "selected" : ""}>❌ مرتجع</option>
             </select>
             <button id="btn-${order.rowIndex}" class="btn-save-status" onclick="handleConfirmButton(${order.rowIndex}, ${priceNum})">تأكيد</button>
           </div>
@@ -530,7 +524,6 @@
       });
     }
 
-    // عند اختيار (تم التسليم / جزئي / مرتجع) تُفتح النافذة الصغيرة فوراً
     function handleStatusChoice(rowIndex, originalPrice) {
       const selectedStatus = document.getElementById(`select-${rowIndex}`).value;
       if (selectedStatus === "تم التسليم" || selectedStatus === "جزئي" || selectedStatus === "مرتجع") {
@@ -538,7 +531,6 @@
       }
     }
 
-    // عند الضغط على زر تأكيد بجوار القائمة
     function handleConfirmButton(rowIndex, originalPrice) {
       const selectedStatus = document.getElementById(`select-${rowIndex}`).value;
       if (selectedStatus === "تم التسليم" || selectedStatus === "جزئي" || selectedStatus === "مرتجع") {
@@ -605,15 +597,15 @@
         const res = await fetch(url);
         const json = await res.json();
 
-        if (json.status === "success" || res.ok) {
+        if (json.status === "success") {
           const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex);
           if (orderObj) {
-            orderObj.collectedK = finalPrice;
-            orderObj.confirmL = statusVal;
-            orderObj.notesN = finalNotes;
+            orderObj.collectedK = json.savedPrice !== undefined ? Number(json.savedPrice) : finalPrice;
+            orderObj.confirmL = json.savedStatus || statusVal;
+            orderObj.notesN = json.savedNotes !== undefined ? json.savedNotes : finalNotes;
           }
           if (btn) btn.innerText = "✔ تم";
-          setTimeout(() => renderOrders(), 400);
+          setTimeout(() => renderOrders(), 300);
         } else {
           alert(json.message || "حدث خطأ أثناء التحديث.");
           if (btn) {
@@ -622,14 +614,11 @@
           }
         }
       } catch (e) {
-        const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex);
-        if (orderObj) {
-          orderObj.collectedK = finalPrice;
-          orderObj.confirmL = statusVal;
-          orderObj.notesN = finalNotes;
+        alert("تعذر الاتصال بالسيرفر، يرجى المحاولة مرة أخرى.");
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = "تأكيد";
         }
-        if (btn) btn.innerText = "✔ تم";
-        setTimeout(() => renderOrders(), 400);
       }
     }
   </script>
