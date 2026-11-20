@@ -256,7 +256,7 @@
       <h3 id="modalTitle" class="modal-title">تحديث حالة الأوردر</h3>
       <p id="modalSub" class="modal-sub">أدخل السعر (عمود K) والملاحظات (عمود N)</p>
 
-      <label class="modal-label" for="modalPriceInput">السعر / المبلغ (يسمّع في عمود K):</label>
+      <label id="modalPriceLabel" class="modal-label" for="modalPriceInput">السعر / المبلغ (يسمّع في عمود K):</label>
       <input type="number" id="modalPriceInput" class="modal-input" inputmode="decimal" placeholder="أدخل المبلغ..." />
 
       <label class="modal-label" for="modalNotesInput">الملاحظات (تسمّع في عمود N):</label>
@@ -270,7 +270,7 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwolDhHgjdrd2rd2ByoGl9lKmm021BZMzykI6i4Mc1GjP30dEZZ1WoQwvxYSDZBpBgu_A/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx_5lqpK5u2YabVZgUpe0bm7LosyftbzmeXHrtU8o7-qEfnDW41IWCQVn6J05r3ORM0yA/exec";
 
     let currentRep = "";
     let currentPin = "";
@@ -495,7 +495,7 @@
         const statusType = getOrderStatusType(order);
 
         const fullAddress = [order.governorate, order.address].filter(Boolean).join(" - ");
-        const prefilledMsg = `أهلاً بحضرتك أ/ ${order.clientName}، مع حضرتك مندوب شركة أميال إكسبريس للشحن (${currentRep}). بخصوص أوردر بقيمة ${priceNum} جنيه، متواجد لتسليم الشحنة لحضرتك اليوم.`;
+        const prefilledMsg = `مساء الخير يا فندم, بنتواصل مع حضرتك لتأكيد الطلب الخاص بكم:\nلتأكيد الطلب و بدء عمليه الشحن\nبرجاء الرد بكلمه تأكيد\nو ارسال العنوان تفصيلي مع علامه مميزه بالعنوان (سوبرماركت / مدرسه / قهوه / مسجد ... ), او لوكيشن و لو في رقم اضافي لحضرتك ممكن تبعته علشان المندوب يقدر يسلم حضرتك الطلب\nشكرا لزوق حضرتك`;
         const encodedMsg = encodeURIComponent(prefilledMsg);
 
         const card = document.createElement("div");
@@ -554,21 +554,34 @@
       document.getElementById("modalTitle").innerText = `حالة الأوردر: ${statusVal}`;
       document.getElementById("modalSub").innerText = `العميل: ${orderObj.clientName || ""} | أصل السعر: ${originalPrice} ج.م`;
 
+      const priceLabel = document.getElementById("modalPriceLabel");
       const priceInput = document.getElementById("modalPriceInput");
       const notesInput = document.getElementById("modalNotesInput");
 
       if (statusVal === "تم التسليم") {
+        priceLabel.style.display = "block";
+        priceInput.style.display = "block";
         priceInput.value = originalPrice > 0 ? originalPrice : (orderObj.collectedK || "");
       } else if (statusVal === "جزئي") {
+        priceLabel.style.display = "block";
+        priceInput.style.display = "block";
         priceInput.value = orderObj.collectedK > 0 ? orderObj.collectedK : "";
       } else if (statusVal === "مرتجع") {
+        priceLabel.style.display = "none";
+        priceInput.style.display = "none";
         priceInput.value = "";
       }
 
       notesInput.value = "";
 
       document.getElementById("statusModal").classList.add("show");
-      setTimeout(() => priceInput.focus(), 100);
+      setTimeout(() => {
+        if (statusVal === "مرتجع") {
+          notesInput.focus();
+        } else {
+          priceInput.focus();
+        }
+      }, 100);
     }
 
     function closeStatusModal() {
@@ -581,7 +594,7 @@
       if (!pendingModalData) return;
 
       const { rowIndex, statusVal } = pendingModalData;
-      const rawPrice = document.getElementById("modalPriceInput").value.trim();
+      const rawPrice = statusVal === "مرتجع" ? "" : document.getElementById("modalPriceInput").value.trim();
       const finalNotes = document.getElementById("modalNotesInput").value;
 
       document.getElementById("statusModal").classList.remove("show");
