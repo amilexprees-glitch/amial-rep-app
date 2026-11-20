@@ -243,7 +243,6 @@
     <div class="orders-container" id="ordersList"></div>
   </div>
 
-  <!-- النافذة المنبثقة الصغيرة لإدخال السعر (K) والملاحظات (N) -->
   <div id="statusModal" class="modal-backdrop">
     <div class="modal-box">
       <h3 id="modalTitle" class="modal-title">تحديث حالة الأوردر</h3>
@@ -389,26 +388,10 @@
       renderOrders();
     }
 
-    function isMobileDigits(val) {
-      const d = String(val || "").replace(/[^0-9]/g, "");
-      return d.length >= 10 && d.length <= 12 && (d.startsWith("01") || d.startsWith("1") || d.startsWith("201"));
-    }
-
     function formatEgyptianPhone(rawPhone) {
       let clean = String(rawPhone || "").replace(/[^0-9]/g, "");
       if (clean.length === 10 && clean.startsWith("1")) clean = "0" + clean;
       return clean;
-    }
-
-    function sanitizeOrderPriceAndPhone(order) {
-      let phone = formatEgyptianPhone(order.phone);
-      let price = parseFloat(order.price) || 0;
-
-      if (isMobileDigits(price)) {
-        if (!phone) phone = formatEgyptianPhone(price);
-        price = 0;
-      }
-      return { phone, price };
     }
 
     function extractDayFromColumnX(dateVal) {
@@ -429,7 +412,7 @@
     }
 
     function getOrderStatusType(order) {
-      const { price: priceNum } = sanitizeOrderPriceAndPhone(order);
+      const priceNum = parseFloat(order.price) || 0;
       const collectedNum = parseFloat(order.collectedK) || 0;
       const confirmL = String(order.confirmL || "").trim();
 
@@ -497,8 +480,9 @@
       }
 
       filteredOrders.forEach(order => {
-        const { phone, price: priceNum } = sanitizeOrderPriceAndPhone(order);
+        const phone = formatEgyptianPhone(order.phone);
         const waPhone = phone.startsWith("0") ? "2" + phone : phone;
+        const priceNum = parseFloat(order.price) || 0;
         const collectedNum = parseFloat(order.collectedK) || 0;
         const statusType = getOrderStatusType(order);
 
@@ -517,7 +501,7 @@
           <div class="info-line"><span>📱 الهاتف:</span> <b dir="ltr">${phone || "غير مسجل"}</b> | <span>🏷️ الراسل:</span> ${order.sender || "-"}</div>
           <div class="info-line"><span>📅 التاريخ (X):</span> ${order.date || "غير محدد"}</div>
           <div class="info-line"><span>💰 الوارد المسجل (K):</span> <b style="color:var(--success);">${collectedNum} ج.م</b></div>
-          ${order.notesN ? `<div class="info-line"><span>📝 ملاحظات (N):</span> ${order.notesN}</div>` : ''}
+          <div class="info-line"><span>📝 ملاحظات (N):</span> ${order.notesN || "-"}</div>
 
           <div class="contact-actions">
             <a href="${phone ? `tel:${phone}` : '#'}" class="c-btn btn-call">📞 اتصال</a>
@@ -557,17 +541,16 @@
 
     function openStatusModal(rowIndex, originalPrice, statusVal) {
       const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex) || {};
-      const { price: cleanOriginalPrice } = sanitizeOrderPriceAndPhone({ price: originalPrice, phone: orderObj.phone });
-      pendingModalData = { rowIndex, originalPrice: cleanOriginalPrice, statusVal };
+      pendingModalData = { rowIndex, originalPrice, statusVal };
 
       document.getElementById("modalTitle").innerText = `حالة الأوردر: ${statusVal}`;
-      document.getElementById("modalSub").innerText = `العميل: ${orderObj.clientName || ""} | أصل السعر: ${cleanOriginalPrice} ج.م`;
+      document.getElementById("modalSub").innerText = `العميل: ${orderObj.clientName || ""} | أصل السعر: ${originalPrice} ج.م`;
 
       const priceInput = document.getElementById("modalPriceInput");
       const notesInput = document.getElementById("modalNotesInput");
 
       if (statusVal === "تم التسليم") {
-        priceInput.value = cleanOriginalPrice > 0 ? cleanOriginalPrice : (orderObj.collectedK || "");
+        priceInput.value = originalPrice > 0 ? originalPrice : (orderObj.collectedK || "");
       } else if (statusVal === "جزئي") {
         priceInput.value = orderObj.collectedK > 0 ? orderObj.collectedK : "";
       } else if (statusVal === "مرتجع") {
@@ -608,7 +591,7 @@
       }
 
       try {
-        const url = `${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${encodeURIComponent(priceParamStr)}¬es=${encodeURIComponent(finalNotes)}`;
+        const url = `${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${encodeURIComponent(priceParamStr)}&notes=${encodeURIComponent(finalNotes)}`;
         const res = await fetch(url);
         const json = await res.json();
 
