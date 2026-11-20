@@ -253,7 +253,7 @@
       <input type="number" id="modalPriceInput" class="modal-input" inputmode="decimal" placeholder="أدخل المبلغ..." />
 
       <label class="modal-label" for="modalNotesInput">الملاحظات (تسمّع في عمود N):</label>
-      <input type="text" id="modalNotesInput" class="modal-input" placeholder="اكتب ملاحظاتك هنا..." />
+      <input type="text" id="modalNotesInput" class="modal-input" placeholder="اكتب أي شيء هنا..." />
 
       <div class="modal-actions">
         <button type="button" id="modalSaveBtn" class="btn-modal-save" onclick="confirmModalUpdate()">✔ حفظ وإرسال</button>
@@ -263,7 +263,7 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxFkMouveD34v-fvEnR6vqSOoyd-4dAPGpjzWx_fiZk9vJIBegzozMBru6Mu4ut7o7y1g/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx_5lqpK5u2YabVZgUpe0bm7LosyftbzmeXHrtU8o7-qEfnDW41IWCQVn6J05r3ORM0yA/exec";
 
     let currentRep = "";
     let currentPin = "";
@@ -389,10 +389,26 @@
       renderOrders();
     }
 
+    function isMobileDigits(val) {
+      const d = String(val || "").replace(/[^0-9]/g, "");
+      return d.length >= 10 && d.length <= 12 && (d.startsWith("01") || d.startsWith("1") || d.startsWith("201"));
+    }
+
     function formatEgyptianPhone(rawPhone) {
       let clean = String(rawPhone || "").replace(/[^0-9]/g, "");
       if (clean.length === 10 && clean.startsWith("1")) clean = "0" + clean;
       return clean;
+    }
+
+    function sanitizeOrderPriceAndPhone(order) {
+      let phone = formatEgyptianPhone(order.phone);
+      let price = parseFloat(order.price) || 0;
+
+      if (isMobileDigits(price)) {
+        if (!phone) phone = formatEgyptianPhone(price);
+        price = 0;
+      }
+      return { phone, price };
     }
 
     function extractDayFromColumnX(dateVal) {
@@ -413,7 +429,7 @@
     }
 
     function getOrderStatusType(order) {
-      const priceNum = parseFloat(order.price) || 0;
+      const { price: priceNum } = sanitizeOrderPriceAndPhone(order);
       const collectedNum = parseFloat(order.collectedK) || 0;
       const confirmL = String(order.confirmL || "").trim();
 
@@ -481,14 +497,13 @@
       }
 
       filteredOrders.forEach(order => {
-        const phone = formatEgyptianPhone(order.phone);
+        const { phone, price: priceNum } = sanitizeOrderPriceAndPhone(order);
         const waPhone = phone.startsWith("0") ? "2" + phone : phone;
-        const priceNum = parseFloat(order.price) || 0;
         const collectedNum = parseFloat(order.collectedK) || 0;
         const statusType = getOrderStatusType(order);
 
         const fullAddress = [order.governorate, order.address].filter(Boolean).join(" - ");
-        const prefilledMsg = `أهلاً بحضرتك أ/ ${order.clientName}، مع حضرتك مندوب شركة أميال إكسبريس للشحن (${currentRep}). بخصوص أوردر (${order.sender || "أميال"}) بقيمة ${priceNum} جنيه، متواجد لتسليم الشحنة لحضرتك اليوم.`;
+        const prefilledMsg = `أهلاً بحضرتك أ/ ${order.clientName}، مع حضرتك مندوب شركة أميال إكسبريس للشحن (${currentRep}). بخصوص أوردر بقيمة ${priceNum} جنيه، متواجد لتسليم الشحنة لحضرتك اليوم.`;
         const encodedMsg = encodeURIComponent(prefilledMsg);
 
         const card = document.createElement("div");
@@ -499,7 +514,7 @@
             <span class="price-badge">${priceNum} ج.م</span>
           </div>
           <div class="info-line"><span>📍 العنوان:</span> ${fullAddress || "غير مسجل"}</div>
-          <div class="info-line"><span>📱 الهاتف:</span> <b dir="ltr">${phone || "غير مسجل"}</b> | <span>🏷️ الكود:</span> ${order.sender || "-"}</div>
+          <div class="info-line"><span>📱 الهاتف:</span> <b dir="ltr">${phone || "غير مسجل"}</b> | <span>🏷️ الراسل:</span> ${order.sender || "-"}</div>
           <div class="info-line"><span>📅 التاريخ (X):</span> ${order.date || "غير محدد"}</div>
           <div class="info-line"><span>💰 الوارد المسجل (K):</span> <b style="color:var(--success);">${collectedNum} ج.م</b></div>
           ${order.notesN ? `<div class="info-line"><span>📝 ملاحظات (N):</span> ${order.notesN}</div>` : ''}
@@ -536,30 +551,30 @@
       if (selectedStatus === "تم التسليم" || selectedStatus === "جزئي" || selectedStatus === "مرتجع") {
         openStatusModal(rowIndex, originalPrice, selectedStatus);
       } else {
-        // تحت التسليم: لا يرسل سعراً ولا يضع صفراً في عمود K
         sendUpdateToSheet(rowIndex, selectedStatus, "", "");
       }
     }
 
     function openStatusModal(rowIndex, originalPrice, statusVal) {
       const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex) || {};
-      pendingModalData = { rowIndex, originalPrice, statusVal };
+      const { price: cleanOriginalPrice } = sanitizeOrderPriceAndPhone({ price: originalPrice, phone: orderObj.phone });
+      pendingModalData = { rowIndex, originalPrice: cleanOriginalPrice, statusVal };
 
       document.getElementById("modalTitle").innerText = `حالة الأوردر: ${statusVal}`;
-      document.getElementById("modalSub").innerText = `العميل: ${orderObj.clientName || ""} | أصل السعر: ${originalPrice} ج.م`;
+      document.getElementById("modalSub").innerText = `العميل: ${orderObj.clientName || ""} | أصل السعر: ${cleanOriginalPrice} ج.م`;
 
       const priceInput = document.getElementById("modalPriceInput");
       const notesInput = document.getElementById("modalNotesInput");
 
       if (statusVal === "تم التسليم") {
-        priceInput.value = originalPrice > 0 ? originalPrice : (orderObj.collectedK || "");
+        priceInput.value = cleanOriginalPrice > 0 ? cleanOriginalPrice : (orderObj.collectedK || "");
       } else if (statusVal === "جزئي") {
         priceInput.value = orderObj.collectedK > 0 ? orderObj.collectedK : "";
       } else if (statusVal === "مرتجع") {
         priceInput.value = "";
       }
 
-      notesInput.value = orderObj.notesN || "";
+      notesInput.value = "";
 
       document.getElementById("statusModal").classList.add("show");
       setTimeout(() => priceInput.focus(), 100);
@@ -576,7 +591,7 @@
 
       const { rowIndex, statusVal } = pendingModalData;
       const rawPrice = document.getElementById("modalPriceInput").value.trim();
-      const finalNotes = document.getElementById("modalNotesInput").value.trim();
+      const finalNotes = document.getElementById("modalNotesInput").value;
 
       document.getElementById("statusModal").classList.remove("show");
       pendingModalData = null;
