@@ -250,7 +250,7 @@
       <p id="modalSub" class="modal-sub">أدخل السعر (عمود K) والملاحظات (عمود N)</p>
 
       <label class="modal-label" for="modalPriceInput">السعر / المبلغ (يسمّع في عمود K):</label>
-      <input type="number" id="modalPriceInput" class="modal-input" inputmode="decimal" placeholder="مثال: 500" />
+      <input type="number" id="modalPriceInput" class="modal-input" inputmode="decimal" placeholder="أدخل المبلغ..." />
 
       <label class="modal-label" for="modalNotesInput">الملاحظات (تسمّع في عمود N):</label>
       <input type="text" id="modalNotesInput" class="modal-input" placeholder="اكتب ملاحظاتك هنا..." />
@@ -536,7 +536,8 @@
       if (selectedStatus === "تم التسليم" || selectedStatus === "جزئي" || selectedStatus === "مرتجع") {
         openStatusModal(rowIndex, originalPrice, selectedStatus);
       } else {
-        sendUpdateToSheet(rowIndex, selectedStatus, 0, "مع المندوب");
+        // تحت التسليم: لا يرسل سعراً ولا يضع صفراً في عمود K
+        sendUpdateToSheet(rowIndex, selectedStatus, "", "");
       }
     }
 
@@ -551,11 +552,11 @@
       const notesInput = document.getElementById("modalNotesInput");
 
       if (statusVal === "تم التسليم") {
-        priceInput.value = orderObj.collectedK > 0 ? orderObj.collectedK : originalPrice;
+        priceInput.value = originalPrice > 0 ? originalPrice : (orderObj.collectedK || "");
       } else if (statusVal === "جزئي") {
         priceInput.value = orderObj.collectedK > 0 ? orderObj.collectedK : "";
       } else if (statusVal === "مرتجع") {
-        priceInput.value = orderObj.collectedK > 0 ? orderObj.collectedK : 0;
+        priceInput.value = "";
       }
 
       notesInput.value = orderObj.notesN || "";
@@ -575,16 +576,15 @@
 
       const { rowIndex, statusVal } = pendingModalData;
       const rawPrice = document.getElementById("modalPriceInput").value.trim();
-      const finalPrice = rawPrice === "" ? 0 : (parseFloat(rawPrice) || 0);
       const finalNotes = document.getElementById("modalNotesInput").value.trim();
 
       document.getElementById("statusModal").classList.remove("show");
       pendingModalData = null;
 
-      await sendUpdateToSheet(rowIndex, statusVal, finalPrice, finalNotes);
+      await sendUpdateToSheet(rowIndex, statusVal, rawPrice, finalNotes);
     }
 
-    async function sendUpdateToSheet(rowIndex, statusVal, finalPrice, finalNotes) {
+    async function sendUpdateToSheet(rowIndex, statusVal, priceParamStr, finalNotes) {
       const sheetName = document.getElementById("sheetSelect").value;
       const btn = document.getElementById(`btn-${rowIndex}`);
       if (btn) {
@@ -593,16 +593,20 @@
       }
 
       try {
-        const url = `${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${encodeURIComponent(finalPrice)}¬es=${encodeURIComponent(finalNotes)}`;
+        const url = `${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${encodeURIComponent(priceParamStr)}¬es=${encodeURIComponent(finalNotes)}`;
         const res = await fetch(url);
         const json = await res.json();
 
         if (json.status === "success") {
           const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex);
           if (orderObj) {
-            orderObj.collectedK = json.savedPrice !== undefined ? Number(json.savedPrice) : finalPrice;
+            if (json.savedPrice !== undefined) {
+              orderObj.collectedK = Number(json.savedPrice) || 0;
+            }
             orderObj.confirmL = json.savedStatus || statusVal;
-            orderObj.notesN = json.savedNotes !== undefined ? json.savedNotes : finalNotes;
+            if (json.savedNotes !== undefined) {
+              orderObj.notesN = json.savedNotes;
+            }
           }
           if (btn) btn.innerText = "✔ تم";
           setTimeout(() => renderOrders(), 300);
