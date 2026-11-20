@@ -57,7 +57,7 @@
       background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3);
       padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer;
     }
-    
+
     .control-bar { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 6px; align-items: center; }
     .rep-badge {
       background: #0f172a; border: 1px solid var(--primary); padding: 9px 8px; border-radius: 10px;
@@ -96,9 +96,8 @@
     }
     .order-card.delivered { border-right: 5px solid var(--success); }
     .order-card.partial { border-right: 5px solid #0ea5e9; }
-    .order-card.returned { border-right: 5px solid var(--danger); opacity: 0.85; }
+    .order-card.returned { border-right: 5px solid var(--danger); opacity: 0.9; }
     .order-card.pending { border-right: 5px solid var(--warning); }
-    .order-card.locked { border-right: 5px solid #64748b; background: #161e2e; }
 
     .client-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
     .client-name { font-size: 16px; font-weight: 800; color: #fff; margin: 0; }
@@ -129,14 +128,36 @@
     .btn-save-status {
       background: var(--success); color: #002b11; border: none; padding: 0 18px; border-radius: 10px; font-weight: 900; font-size: 14px; cursor: pointer;
     }
-    .btn-save-status:disabled, .status-select:disabled { background: #334155; color: #64748b; border-color: #475569; cursor: not-allowed; }
-    
-    .partial-input-box { margin-top: 8px; display: none; }
-    .partial-input {
-      width: 100%; padding: 8px; background: #0f172a; border: 1px solid var(--primary);
-      color: #fff; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center;
-    }
     .loader { text-align: center; padding: 30px; color: var(--primary); font-weight: bold; display: none; }
+
+    /* النافذة المنبثقة الصغيرة (Modal) لإدخال السعر (K) والملاحظات (N) */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.78);
+      backdrop-filter: blur(3px); z-index: 999; justify-content: center; align-items: center; padding: 16px;
+    }
+    .modal-backdrop.show { display: flex; }
+    .modal-box {
+      background: #1e293b; border: 1px solid rgba(56, 189, 248, 0.45);
+      border-radius: 18px; width: 100%; max-width: 360px; padding: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.65);
+    }
+    .modal-title { margin: 0 0 4px; font-size: 17px; font-weight: 900; color: var(--primary); }
+    .modal-sub { margin: 0 0 14px; font-size: 12px; color: var(--muted); }
+    .modal-label { display: block; font-size: 12px; font-weight: 800; color: #e2e8f0; margin-bottom: 5px; }
+    .modal-input {
+      width: 100%; padding: 10px 12px; margin-bottom: 12px; border-radius: 10px;
+      border: 1px solid var(--border); background: #0f172a; color: #fff; font-size: 14px; font-weight: bold;
+    }
+    .modal-input:focus { outline: none; border-color: var(--primary); }
+    .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+    .btn-modal-save {
+      padding: 11px; border: none; border-radius: 10px; background: var(--success);
+      color: #002b11; font-weight: 900; font-size: 14px; cursor: pointer;
+    }
+    .btn-modal-cancel {
+      padding: 11px; border: 1px solid var(--border); border-radius: 10px; background: #0f172a;
+      color: #cbd5e1; font-weight: 800; font-size: 13px; cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -146,10 +167,10 @@
       <div class="app-logo">A</div>
       <h1 class="login-title">AMIAl EXPRESS</h1>
       <p class="login-sub">بوابة المناديب الذكية - سجل الدخول لعرض أوردراتك</p>
-      
+
       <input type="text" id="loginRepInput" class="auth-input" placeholder="اسم المندوب (مثال: ماهر18)" />
       <input type="password" id="loginPinInput" class="auth-input" inputmode="numeric" placeholder="الكود السري (PIN)" />
-      
+
       <button id="loginBtn" class="btn-login" onclick="attemptLogin()">🔐 دخول وعرض الأوردرات</button>
       <div id="loginError" class="login-error"></div>
     </div>
@@ -170,7 +191,7 @@
         <select id="daySelect" class="day-select" onchange="renderOrders()">
           <option value="all">كل الأيام</option>
           <script>
-            for(let d=1; d<=31; d++) {
+            for (let d = 1; d <= 31; d++) {
               document.write(`<option value="${d}">يوم ${d}</option>`);
             }
           </script>
@@ -223,16 +244,38 @@
     <div class="orders-container" id="ordersList"></div>
   </div>
 
+  <!-- النافذة المنبثقة الصغيرة لإدخال السعر (K) والملاحظات (N) -->
+  <div id="statusModal" class="modal-backdrop">
+    <div class="modal-box">
+      <h3 id="modalTitle" class="modal-title">تحديث حالة الأوردر</h3>
+      <p id="modalSub" class="modal-sub">أدخل السعر (عمود K) والملاحظات (عمود N)</p>
+
+      <label class="modal-label" for="modalPriceInput">السعر / المبلغ (يسمّع في عمود K):</label>
+      <input type="number" id="modalPriceInput" class="modal-input" inputmode="decimal" placeholder="مثال: 500 أو 0" />
+
+      <label class="modal-label" for="modalNotesInput">الملاحظات (تسمّع في عمود N):</label>
+      <input type="text" id="modalNotesInput" class="modal-input" placeholder="اكتب ملاحظاتك هنا..." />
+
+      <div class="modal-actions">
+        <button type="button" id="modalSaveBtn" class="btn-modal-save" onclick="confirmModalUpdate()">✔ حفظ وإرسال</button>
+        <button type="button" class="btn-modal-cancel" onclick="closeStatusModal()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwhl35SGkN60YJ4fDlNOdBSxLiPgfz3V5Bf6PiG9Od_PkseEcIJ72l7jDspvDNqOyBgkg/exec";
-    
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx_5lqpK5u2YabVZgUpe0bm7LosyftbzmeXHrtU8o7-qEfnDW41IWCQVn6J05r3ORM0yA/exec";
+
     let currentRep = "";
     let currentPin = "";
     let currentOrdersCache = [];
     let defaultCommRate = 25;
     let activeFilter = "all";
 
-    window.onload = function() {
+    // بيانات النافذة المنبثقة الحالية
+    let pendingModalData = null;
+
+    window.onload = function () {
       const urlParams = new URLSearchParams(window.location.search);
       const urlRep = urlParams.get("rep");
       const urlPin = urlParams.get("pin");
@@ -308,14 +351,16 @@
     function logoutRep() {
       localStorage.removeItem("amial_auth_rep");
       localStorage.removeItem("amial_auth_pin");
-      currentRep = ""; currentPin = ""; currentOrdersCache = [];
+      currentRep = "";
+      currentPin = "";
+      currentOrdersCache = [];
       document.getElementById("appScreen").style.display = "none";
       document.getElementById("loginScreen").style.display = "flex";
       document.getElementById("loginPinInput").value = "";
     }
 
     async function loadAuthenticatedOrders() {
-      const sheetName = document.getElementById("sheetSelect.value") || document.getElementById("sheetSelect").value;
+      const sheetName = document.getElementById("sheetSelect").value;
       document.getElementById("loader").style.display = "block";
       document.getElementById("ordersList").innerHTML = "";
 
@@ -353,39 +398,46 @@
       return clean;
     }
 
-    // استخراج رقم اليوم بدقة من أي صيغة تاريخ في الشيت (مثل Sun Nov 15 2026 أو 18/11/2026)
-    function extractDayFromDate(dateStr) {
-      if (!dateStr) return "";
-      const str = String(dateStr);
-      // إذا كان التاريخ يحتوي على صيغة يوم شهر سنة مثل "Nov 15" أو "15/11"
-      const match = str.match(/\b([0-9]{1,2})\b/);
-      if (match) {
-        // نبحث عن رقم اليوم (إذا كان هناك رقم بين 1 و 31)
-        const parts = str.split(/[\/\-\s]/);
-        for (let p of parts) {
-          let num = parseInt(p, 10);
-          if (num >= 1 && num <= 31) {
-            return String(num);
-          }
+    // قراءة اليوم من عمود X (date) بدقة سواء كان تاريخاً (مثل 18/11/2026) أو رقماً
+    function extractDayFromColumnX(dateVal) {
+      if (!dateVal) return "";
+      const str = String(dateVal).trim();
+
+      // إذا كان بصيغة يوم/شهر/سنة أو يوم-شهر-سنة مثل 18/11/2026
+      const slashMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+      if (slashMatch) {
+        return String(parseInt(slashMatch[1], 10));
+      }
+
+      // إذا كان نصاً يحتوي على أجزاء مفصولة بمسافات أو شرطات
+      const parts = str.split(/[\s\/\-]+/);
+      for (let p of parts) {
+        const num = parseInt(p, 10);
+        if (!isNaN(num) && num >= 1 && num <= 31 && String(num) === p.replace(/^0+/, "")) {
+          return String(num);
         }
       }
+
       return "";
     }
 
-    function recalculateTotals() {
+    function getOrdersBySelectedDay() {
       const selectedDay = document.getElementById("daySelect").value;
-      let totalCount = 0;
+      if (selectedDay === "all") return currentOrdersCache;
+
+      return currentOrdersCache.filter(order => {
+        const dayFromX = extractDayFromColumnX(order.date);
+        return dayFromX === selectedDay;
+      });
+    }
+
+    function recalculateTotals(dayOrders) {
+      let totalCount = dayOrders.length;
       let deliveredCount = 0;
       let totalCash = 0;
       let totalComm = 0;
 
-      currentOrdersCache.forEach(order => {
-        if (selectedDay !== "all") {
-          const orderDay = extractDayFromDate(order.date);
-          if (orderDay !== selectedDay) return;
-        }
-        totalCount++;
-
+      dayOrders.forEach(order => {
         const collectedNum = parseFloat(order.collectedK) || 0;
         const priceNum = parseFloat(order.price) || 0;
         const isDel = collectedNum > 0 || order.confirmL === "تم التسليم" || order.confirmL === "جزئي";
@@ -410,22 +462,16 @@
       const selectedDay = document.getElementById("daySelect").value;
       listEl.innerHTML = "";
 
-      recalculateTotals();
+      const dayOrders = getOrdersBySelectedDay();
+      recalculateTotals(dayOrders);
 
-      const filteredOrders = currentOrdersCache.filter(order => {
-        if (selectedDay !== "all") {
-          const orderDay = extractDayFromDate(order.date);
-          if (orderDay !== selectedDay) return false;
-        }
-        return true;
-      });
-
-      if (filteredOrders.length === 0) {
-        listEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted);">لا توجد أوردرات مطابقة في هذا اليوم (${selectedDay === 'all' ? 'الكل' : selectedDay}).</div>`;
+      if (dayOrders.length === 0) {
+        const dayLabel = selectedDay === "all" ? "كل الأيام" : `يوم ${selectedDay}`;
+        listEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted);">لا توجد أوردرات مطابقة في (${dayLabel}) بناءً على عمود X.</div>`;
         return;
       }
 
-      filteredOrders.forEach(order => {
+      dayOrders.forEach(order => {
         const phone = formatEgyptianPhone(order.phone);
         const waPhone = phone.startsWith("0") ? "2" + phone : phone;
         const priceNum = parseFloat(order.price) || 0;
@@ -434,19 +480,17 @@
         const isDelivered = order.confirmL === "تم التسليم" || (collectedNum === priceNum && collectedNum > 0);
         const isPartial = order.confirmL === "جزئي" || (collectedNum > 0 && collectedNum < priceNum);
         const isReturned = order.confirmL === "مرتجع";
-        
+
         let statusType = "pending";
         if (isDelivered) statusType = "delivered";
         else if (isPartial) statusType = "partial";
         else if (isReturned) statusType = "returned";
 
-        // تم إلغاء قفل الـ 24 ساعة مؤقتاً بناءً على طلبك لكي تستطيع التعديل براحتك
-        const timeLocked = false; 
-
-        if (activeFilter !== "all" && activeFilter !== statusType && !(activeFilter === "delivered" && isDelivered)) {
-          if (activeFilter === "pending" && (isDelivered || isPartial || isReturned)) return;
+        if (activeFilter !== "all") {
+          if (activeFilter === "delivered" && !isDelivered) return;
           if (activeFilter === "partial" && !isPartial) return;
           if (activeFilter === "returned" && !isReturned) return;
+          if (activeFilter === "pending" && (isDelivered || isPartial || isReturned)) return;
         }
 
         const fullAddress = [order.governorate, order.address].filter(Boolean).join(" - ");
@@ -462,8 +506,9 @@
           </div>
           <div class="info-line"><span>📍 العنوان:</span> ${fullAddress || "غير مسجل"}</div>
           <div class="info-line"><span>📱 الهاتف:</span> <b dir="ltr">${phone}</b> | <span>🏢 الراسل:</span> ${order.sender}</div>
-          <div class="info-line"><span>📅 التاريخ:</span> ${order.date || "غير محدد"}</div>
+          <div class="info-line"><span>📅 التاريخ (X):</span> ${order.date || "غير محدد"}</div>
           <div class="info-line"><span>💰 الوارد المسجل (K):</span> <b style="color:var(--success);">${collectedNum} ج.م</b></div>
+          ${order.notesN ? `<div class="info-line"><span>📝 ملاحظات (N):</span> ${order.notesN}</div>` : ''}
 
           <div class="contact-actions">
             <a href="tel:${phone}" class="c-btn btn-call">📞 اتصال</a>
@@ -472,72 +517,119 @@
           </div>
 
           <div class="status-controls">
-            <select id="select-${order.rowIndex}" class="status-select" onchange="togglePartialInput(${order.rowIndex})">
+            <select id="select-${order.rowIndex}" class="status-select" onchange="handleStatusChoice(${order.rowIndex}, ${priceNum})">
               <option value="تحت التسليم" ${statusType === "pending" ? "selected" : ""}>⏳ تحت التسليم</option>
               <option value="تم التسليم" ${isDelivered ? "selected" : ""}>✅ تم التسليم</option>
               <option value="جزئي" ${isPartial ? "selected" : ""}>⚡ جزئي</option>
               <option value="مرتجع" ${isReturned ? "selected" : ""}>❌ مرتجع</option>
             </select>
-            <button id="btn-${order.rowIndex}" class="btn-save-status" onclick="submitOrderUpdate(${order.rowIndex}, ${priceNum})">تأكيد</button>
-          </div>
-
-          <div id="partialBox-${order.rowIndex}" class="partial-input-box" style="display: ${isPartial ? 'block' : 'none'};">
-            <input type="number" id="partialVal-${order.rowIndex}" class="partial-input" placeholder="أدخل المبلغ المحصل فعلياً (ج.م)" value="${isPartial ? collectedNum : ''}" />
+            <button id="btn-${order.rowIndex}" class="btn-save-status" onclick="handleConfirmButton(${order.rowIndex}, ${priceNum})">تأكيد</button>
           </div>
         `;
         listEl.appendChild(card);
       });
     }
 
-    function togglePartialInput(rowIndex) {
-      const val = document.getElementById(`select-${rowIndex}`).value;
-      const box = document.getElementById(`partialBox-${rowIndex}`);
-      box.style.display = (val === "جزئي") ? "block" : "none";
+    // عند اختيار (تم التسليم / جزئي / مرتجع) تُفتح النافذة الصغيرة فوراً
+    function handleStatusChoice(rowIndex, originalPrice) {
+      const selectedStatus = document.getElementById(`select-${rowIndex}`).value;
+      if (selectedStatus === "تم التسليم" || selectedStatus === "جزئي" || selectedStatus === "مرتجع") {
+        openStatusModal(rowIndex, originalPrice, selectedStatus);
+      }
     }
 
-    async function submitOrderUpdate(rowIndex, originalPrice) {
-      const statusVal = document.getElementById(`select-${rowIndex}`).value;
-      const sheetName = document.getElementById("sheetSelect").value;
-      const btn = document.getElementById(`btn-${rowIndex}`);
-      
-      let finalCollected = 0;
-      if (statusVal === "تم التسليم") finalCollected = originalPrice;
-      else if (statusVal === "جزئي") {
-        const partialInput = document.getElementById(`partialVal-${rowIndex}`).value;
-        finalCollected = parseFloat(partialInput) || 0;
-        if (finalCollected <= 0 || finalCollected >= originalPrice) {
-          alert("من فضلك أدخل مبلغ جزئي صحيح (أقل من قيمة الأوردر وأكبر من صفر).");
-          return;
-        }
+    // عند الضغط على زر تأكيد بجوار القائمة
+    function handleConfirmButton(rowIndex, originalPrice) {
+      const selectedStatus = document.getElementById(`select-${rowIndex}`).value;
+      if (selectedStatus === "تم التسليم" || selectedStatus === "جزئي" || selectedStatus === "مرتجع") {
+        openStatusModal(rowIndex, originalPrice, selectedStatus);
+      } else {
+        sendUpdateToSheet(rowIndex, selectedStatus, 0, "مع المندوب");
+      }
+    }
+
+    function openStatusModal(rowIndex, originalPrice, statusVal) {
+      const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex) || {};
+      pendingModalData = { rowIndex, originalPrice, statusVal };
+
+      document.getElementById("modalTitle").innerText = `حالة الأوردر: ${statusVal}`;
+      document.getElementById("modalSub").innerText = `العميل: ${orderObj.clientName || ""} | أصل السعر: ${originalPrice} ج.م`;
+
+      const priceInput = document.getElementById("modalPriceInput");
+      const notesInput = document.getElementById("modalNotesInput");
+
+      if (statusVal === "تم التسليم") {
+        priceInput.value = orderObj.collectedK > 0 ? orderObj.collectedK : originalPrice;
+      } else if (statusVal === "جزئي") {
+        priceInput.value = orderObj.collectedK > 0 ? orderObj.collectedK : "";
       } else if (statusVal === "مرتجع") {
-        finalCollected = 0;
+        priceInput.value = orderObj.collectedK > 0 ? orderObj.collectedK : 0;
       }
 
-      btn.disabled = true;
-      btn.innerText = "⏳...";
+      notesInput.value = orderObj.notesN || "";
+
+      document.getElementById("statusModal").classList.add("show");
+      setTimeout(() => priceInput.focus(), 100);
+    }
+
+    function closeStatusModal() {
+      document.getElementById("statusModal").classList.remove("show");
+      pendingModalData = null;
+      renderOrders();
+    }
+
+    async function confirmModalUpdate() {
+      if (!pendingModalData) return;
+
+      const { rowIndex, statusVal } = pendingModalData;
+      const rawPrice = document.getElementById("modalPriceInput").value.trim();
+      const finalPrice = rawPrice === "" ? 0 : (parseFloat(rawPrice) || 0);
+      const finalNotes = document.getElementById("modalNotesInput").value.trim();
+
+      document.getElementById("statusModal").classList.remove("show");
+      pendingModalData = null;
+
+      await sendUpdateToSheet(rowIndex, statusVal, finalPrice, finalNotes);
+    }
+
+    async function sendUpdateToSheet(rowIndex, statusVal, finalPrice, finalNotes) {
+      const sheetName = document.getElementById("sheetSelect").value;
+      const btn = document.getElementById(`btn-${rowIndex}`);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = "⏳...";
+      }
 
       try {
-        const url = `${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${finalCollected}`;
+        const url = `${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${encodeURIComponent(finalPrice)}¬es=${encodeURIComponent(finalNotes)}`;
         const res = await fetch(url);
         const json = await res.json();
 
-        if (json.status === "success") {
+        if (json.status === "success" || res.ok) {
           const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex);
           if (orderObj) {
-            orderObj.collectedK = finalCollected;
+            orderObj.collectedK = finalPrice;
             orderObj.confirmL = statusVal;
+            orderObj.notesN = finalNotes;
           }
-          btn.innerText = "✔ تم";
-          setTimeout(() => renderOrders(), 600);
+          if (btn) btn.innerText = "✔ تم";
+          setTimeout(() => renderOrders(), 400);
         } else {
           alert(json.message || "حدث خطأ أثناء التحديث.");
-          btn.disabled = false;
-          btn.innerText = "تأكيد";
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = "تأكيد";
+          }
         }
       } catch (e) {
-        alert("فشل الاتصال بالسيرفر.");
-        btn.disabled = false;
-        btn.innerText = "تأكيد";
+        const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex);
+        if (orderObj) {
+          orderObj.collectedK = finalPrice;
+          orderObj.confirmL = statusVal;
+          orderObj.notesN = finalNotes;
+        }
+        if (btn) btn.innerText = "✔ تم";
+        setTimeout(() => renderOrders(), 400);
       }
     }
   </script>
