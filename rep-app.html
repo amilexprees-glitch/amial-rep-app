@@ -52,7 +52,12 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.4);
     }
     .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .brand-wrap { display: flex; align-items: center; gap: 8px; }
     .brand-title { font-size: 16px; font-weight: 800; color: var(--primary); margin: 0; }
+    .version-tag {
+      background: rgba(56, 189, 248, 0.16); color: var(--primary); border: 1px solid rgba(56, 189, 248, 0.35);
+      padding: 2px 7px; border-radius: 999px; font-size: 11px; font-weight: 800;
+    }
     .btn-logout {
       background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3);
       padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer;
@@ -165,7 +170,7 @@
     <div class="login-card">
       <div class="app-logo">A</div>
       <h1 class="login-title">AMIAl EXPRESS</h1>
-      <p class="login-sub">بوابة المناديب الذكية - سجل الدخول لعرض أوردراتك</p>
+      <p class="login-sub">بوابة المناديب الذكية (v3.0) - سجل الدخول لعرض أوردراتك</p>
 
       <input type="text" id="loginRepInput" class="auth-input" placeholder="اسم المندوب (مثال: حبيبة)" />
       <input type="password" id="loginPinInput" class="auth-input" inputmode="numeric" placeholder="الكود السري (PIN)" />
@@ -178,7 +183,10 @@
   <div id="appScreen">
     <div class="header">
       <div class="header-top">
-        <h1 class="brand-title">🚚 AMIAl EXPRESS</h1>
+        <div class="brand-wrap">
+          <h1 class="brand-title">🚚 AMIAl EXPRESS</h1>
+          <span class="version-tag">v3.0</span>
+        </div>
         <button class="btn-logout" onclick="logoutRep()">🚪 خروج</button>
       </div>
       <div class="control-bar">
@@ -591,7 +599,7 @@
       }
 
       try {
-        const url = `${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${encodeURIComponent(priceParamStr)}&notes=${encodeURIComponent(finalNotes)}`;
+        const url = `${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${encodeURIComponent(priceParamStr)}¬es=${encodeURIComponent(finalNotes)}`;
         const res = await fetch(url);
         const json = await res.json();
 
