@@ -3,42 +3,72 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <meta name="theme-color" content="#0b1120" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="تطبيق المناديب" />
   <title>تطبيق المناديب - AMIAl EXPRESS</title>
 
-  <link rel="icon" type="image/png" href="./logo.png" />
-  <link rel="apple-touch-icon" href="./logo.png" />
-  <link id="pwaManifest" rel="manifest" />
   <script>
-    (function () {
+    (function enforceFreshBuild() {
+      const BUILD_TAG = "v3.5-20261121";
+      const LOGO_FILE = "./1726248526371.jpeg";
+      const url = new URL(window.location.href);
+      const currentBuild = url.searchParams.get("_b");
+
+      if (currentBuild !== BUILD_TAG) {
+        url.searchParams.set("_b", BUILD_TAG);
+        url.searchParams.set("_t", Date.now().toString());
+        window.location.replace(url.toString());
+        return;
+      }
+
+      const iconHref = LOGO_FILE + "?v=" + encodeURIComponent(BUILD_TAG);
+
+      const favIcon = document.createElement("link");
+      favIcon.rel = "icon";
+      favIcon.type = "image/jpeg";
+      favIcon.href = iconHref;
+      document.head.appendChild(favIcon);
+
+      const appleIcon = document.createElement("link");
+      appleIcon.rel = "apple-touch-icon";
+      appleIcon.href = iconHref;
+      document.head.appendChild(appleIcon);
+
+      const manifestLink = document.createElement("link");
+      manifestLink.rel = "manifest";
       const manifestData = {
         name: "تطبيق المناديب - AMIAl EXPRESS",
         short_name: "تطبيق المناديب",
-        start_url: "./rep-app.html",
+        start_url: "./rep-app.html?_b=" + encodeURIComponent(BUILD_TAG),
         scope: "./",
         display: "standalone",
         background_color: "#0b1120",
         theme_color: "#0b1120",
         icons: [
           {
-            src: "./logo.png",
+            src: iconHref,
             sizes: "192x192",
-            type: "image/png",
+            type: "image/jpeg",
             purpose: "any maskable"
           },
           {
-            src: "./logo.png",
+            src: iconHref,
             sizes: "512x512",
-            type: "image/png",
+            type: "image/jpeg",
             purpose: "any maskable"
           }
         ]
       };
       const blob = new Blob([JSON.stringify(manifestData)], { type: "application/json" });
-      document.getElementById("pwaManifest").setAttribute("href", URL.createObjectURL(blob));
+      manifestLink.href = URL.createObjectURL(blob);
+      document.head.appendChild(manifestLink);
+
+      window.__APP_ICON_URL__ = iconHref;
     })();
   </script>
 
@@ -67,12 +97,12 @@
       padding: 28px 22px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
     }
     .app-logo {
-      width: 76px; height: 76px; border-radius: 20px; overflow: hidden;
-      background: #0f172a; border: 2px solid rgba(56, 189, 248, 0.4);
+      width: 82px; height: 82px; border-radius: 20px; overflow: hidden;
+      background: #0b1120; border: 2px solid rgba(56, 189, 248, 0.45);
       display: grid; place-items: center; margin: 0 auto 14px;
     }
     .app-logo img {
-      width: 100%; height: 100%; object-fit: cover; display: block;
+      width: 100%; height: 100%; object-fit: contain; display: block;
     }
     .login-title { font-size: 20px; font-weight: 800; margin: 0 0 6px; color: #fff; }
     .login-sub { font-size: 13px; color: var(--muted); margin: 0 0 20px; }
@@ -96,8 +126,8 @@
     .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .brand-wrap { display: flex; align-items: center; gap: 8px; }
     .header-logo {
-      width: 28px; height: 28px; border-radius: 8px; object-fit: cover;
-      border: 1px solid rgba(56, 189, 248, 0.4);
+      width: 30px; height: 30px; border-radius: 8px; object-fit: contain;
+      background: #0b1120; border: 1px solid rgba(56, 189, 248, 0.4);
     }
     .brand-title { font-size: 16px; font-weight: 800; color: var(--primary); margin: 0; }
     .version-tag {
@@ -215,10 +245,10 @@
   <div id="loginScreen" class="login-screen">
     <div class="login-card">
       <div class="app-logo">
-        <img src="./logo.png" alt="AMIAl EXPRESS" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:28px;font-weight:900;color:#38bdf8;\'>A</span>';" />
+        <img id="loginLogoImg" src="./1726248526371.jpeg" alt="AMIAl EXPRESS" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:28px;font-weight:900;color:#38bdf8;\'>A</span>';" />
       </div>
       <h1 class="login-title">AMIAl EXPRESS</h1>
-      <p class="login-sub">بوابة المناديب الذكية (v3.0) - سجل الدخول لعرض أوردراتك</p>
+      <p class="login-sub">بوابة المناديب الذكية (v3.5) - سجل الدخول لعرض أوردراتك</p>
 
       <input type="text" id="loginRepInput" class="auth-input" placeholder="اسم المندوب (مثال: حبيبة)" />
       <input type="password" id="loginPinInput" class="auth-input" inputmode="numeric" placeholder="الكود السري (PIN)" />
@@ -232,9 +262,9 @@
     <div class="header">
       <div class="header-top">
         <div class="brand-wrap">
-          <img src="./logo.png" alt="Logo" class="header-logo" onerror="this.style.display='none';" />
+          <img id="headerLogoImg" src="./1726248526371.jpeg" alt="Logo" class="header-logo" onerror="this.style.display='none';" />
           <h1 class="brand-title">AMIAl EXPRESS</h1>
-          <span class="version-tag">v3.0</span>
+          <span class="version-tag">v3.5</span>
         </div>
         <button class="btn-logout" onclick="logoutRep()">🚪 خروج</button>
       </div>
@@ -329,6 +359,13 @@
     let pendingModalData = null;
 
     window.onload = function () {
+      if (window.__APP_ICON_URL__) {
+        const loginImg = document.getElementById("loginLogoImg");
+        const headerImg = document.getElementById("headerLogoImg");
+        if (loginImg) loginImg.src = window.__APP_ICON_URL__;
+        if (headerImg) headerImg.src = window.__APP_ICON_URL__;
+      }
+
       const urlParams = new URLSearchParams(window.location.search);
       const urlRep = urlParams.get("rep");
       const urlPin = urlParams.get("pin");
@@ -366,10 +403,10 @@
       btn.innerText = "⏳ جاري التحقق...";
 
       const sheetName = document.getElementById("sheetSelect").value;
-      const url = `${WEB_APP_URL}?action=loginAndGetOrders&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(repVal)}&pin=${encodeURIComponent(pinVal)}`;
+      const url = `${WEB_APP_URL}?action=loginAndGetOrders&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(repVal)}&pin=${encodeURIComponent(pinVal)}&_t=${Date.now()}`;
 
       try {
-        const res = await fetch(url);
+        const res = await fetch(url, { cache: "no-store" });
         const data = await res.json();
 
         btn.disabled = false;
@@ -417,10 +454,10 @@
       document.getElementById("loader").style.display = "block";
       document.getElementById("ordersList").innerHTML = "";
 
-      const url = `${WEB_APP_URL}?action=loginAndGetOrders&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}`;
+      const url = `${WEB_APP_URL}?action=loginAndGetOrders&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&_t=${Date.now()}`;
 
       try {
-        const res = await fetch(url);
+        const res = await fetch(url, { cache: "no-store" });
         const data = await res.json();
         document.getElementById("loader").style.display = "none";
 
@@ -652,8 +689,8 @@
       }
 
       try {
-        const url = `${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${encodeURIComponent(priceParamStr)}¬es=${encodeURIComponent(finalNotes)}`;
-        const res = await fetch(url);
+        const url = `${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${encodeURIComponent(priceParamStr)}¬es=${encodeURIComponent(finalNotes)}&_t=${Date.now()}`;
+        const res = await fetch(url, { cache: "no-store" });
         const json = await res.json();
 
         if (json.status === "success") {
