@@ -14,7 +14,7 @@
 
   <script>
     (function enforceFreshBuild() {
-      const BUILD_TAG = "v3.7-20261203";
+      const BUILD_TAG = "v3.6-20261203";
       const LOGO_FILE = "./1726248526371.jpeg";
       const url = new URL(window.location.href);
       const currentBuild = url.searchParams.get("_b");
@@ -200,25 +200,6 @@
       margin-bottom: 12px;
     }
 
-    .month-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      background: rgba(9, 16, 31, 0.75);
-      border: 1px solid var(--border);
-      padding: 10px 12px;
-      border-radius: 14px;
-      margin-bottom: 12px;
-    }
-
-    .month-bar select {
-      width: auto;
-      min-width: 165px;
-      padding: 8px 12px;
-    }
-
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
@@ -349,13 +330,22 @@
             <p class="brand-sub">إدارة التسليمات والمرتجعات والتحصيل اليومي</p>
           </div>
         </div>
-        <span class="badge" id="buildBadge">v3.7-20261203</span>
+        <span class="badge" id="buildBadge">v3.6-20261203</span>
       </div>
     </div>
 
-    <!-- شاشة تسجيل الدخول (بدون اختيار شهر خارجي) -->
+    <!-- شاشة تسجيل الدخول -->
     <div class="card" id="loginCard">
       <h2 style="margin:0 0 12px; font-size:16px; color:var(--accent);">تسجيل دخول المندوب</h2>
+
+      <div class="form-group">
+        <label for="sheetSelect">اسم الشيت / الشهر</label>
+        <select id="sheetSelect">
+          <option value="1/12/2026">1/12/2026</option>
+          <option value="1/11/2026">1/11/2026</option>
+          <option value="1/10/2026">1/10/2026</option>
+        </select>
+      </div>
 
       <div class="form-group">
         <label for="repNameInput">اسم المندوب</label>
@@ -374,28 +364,18 @@
       <div id="loginMsg" class="msg"></div>
     </div>
 
-    <!-- شاشة التطبيق والأوردرات بعد الدخول -->
+    <!-- شاشة الأوردرات بعد الدخول -->
     <div id="ordersScreen" class="hidden">
       <div class="card">
         <div class="top-bar">
           <div>
             <div style="font-weight:800; font-size:16px;" id="activeRepTitle">المندوب: -</div>
-            <div style="font-size:12px; color:var(--muted);" id="locationStatusLabel">حالة اللوكيشن: بانتظار التفعيل</div>
+            <div style="font-size:12px; color:var(--muted);" id="activeSheetTitle">الشيت: -</div>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button type="button" class="btn btn-secondary" onclick="refreshOrders()">تحديث 🔄</button>
             <button type="button" class="btn btn-danger" onclick="logoutRep()">خروج</button>
           </div>
-        </div>
-
-        <!-- اختيار الشهر داخل التطبيق -->
-        <div class="month-bar">
-          <label for="sheetSelect" style="margin:0; color:var(--accent);">📅 اختر الشهر / الشيت داخل التطبيق:</label>
-          <select id="sheetSelect" onchange="onMonthChanged()">
-            <option value="1/12/2026" selected>1/12/2026</option>
-            <option value="1/11/2026">1/11/2026</option>
-            <option value="1/10/2026">1/10/2026</option>
-          </select>
         </div>
 
         <div class="stats-grid">
@@ -429,12 +409,12 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwEnunQZiWmXe7wUj8MRZb0kJSRL2QZ3QYjq7V1dIlN4-wxZ5DDbIafpg9MVAlaudHebA/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyZrG1UabP9HNIx4wHNZRmODx08W_a4R0zvMYHL_BadbFBw8HCu__7nflyKzp-jsK58aQ/exec";
     const LOCK_KEYWORDS = ["شبراوى", "وراقى", "محمد", "محمود"];
     const LOCATION_CONSENT_KEY = "amial_rep_location_consent_v1"; // "granted" | "denied"
 
     let currentSession = {
-      sheetName: "1/12/2026",
+      sheetName: "",
       repName: "",
       pin: "",
       defaultCommission: 25
@@ -474,13 +454,6 @@
       el.textContent = "";
     }
 
-    function setLocationLabel(text, color) {
-      const el = document.getElementById("locationStatusLabel");
-      if (!el) return;
-      el.textContent = text;
-      if (color) el.style.color = color;
-    }
-
     // طلب موافقة اللوكيشن مرة واحدة فقط وتخزين القرار في localStorage
     function requestLocationConsentOnce(repName, pin, webAppUrl) {
       const safeRep = String(repName || "").trim();
@@ -492,13 +465,11 @@
       const savedDecision = localStorage.getItem(LOCATION_CONSENT_KEY);
 
       if (savedDecision === "granted") {
-        setLocationLabel("حالة اللوكيشن: مفعل ✅", "#86efac");
         sendRepCurrentLocation(safeRep, safePin, apiUrl, false);
         return;
       }
 
       if (savedDecision === "denied") {
-        setLocationLabel("حالة اللوكيشن: غير مفعل ⛔", "#fca5a5");
         sendConsentStatusOnly(safeRep, safePin, apiUrl, "denied");
         return;
       }
@@ -509,11 +480,9 @@
 
       if (isAgreed) {
         localStorage.setItem(LOCATION_CONSENT_KEY, "granted");
-        setLocationLabel("حالة اللوكيشن: مفعل ✅", "#86efac");
         sendRepCurrentLocation(safeRep, safePin, apiUrl, true);
       } else {
         localStorage.setItem(LOCATION_CONSENT_KEY, "denied");
-        setLocationLabel("حالة اللوكيشن: غير مفعل ⛔", "#fca5a5");
         sendConsentStatusOnly(safeRep, safePin, apiUrl, "denied");
       }
     }
@@ -524,22 +493,17 @@
     }
 
     function sendRepCurrentLocation(repName, pin, apiUrl, notifyOnFail) {
-      if (!navigator.geolocation) {
-        setLocationLabel("حالة اللوكيشن: غير مدعوم في الجهاز", "#fcd34d");
-        return;
-      }
+      if (!navigator.geolocation) return;
 
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
           const accuracy = Math.round(pos.coords.accuracy || 0);
-          setLocationLabel("حالة اللوكيشن: تم التحديث ✅", "#86efac");
           const url = `${apiUrl}?action=updateRepLocation&repName=${encodeURIComponent(repName)}&pin=${encodeURIComponent(pin)}&consentStatus=granted&lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&accuracy=${encodeURIComponent(accuracy)}&_t=${Date.now()}`;
           fetch(url, { cache: "no-store" }).catch(() => {});
         },
         () => {
-          setLocationLabel("حالة اللوكيشن: تعذر قراءة GPS", "#fcd34d");
           if (notifyOnFail) {
             alert("تعذر قراءة الموقع من الجهاز. تأكد من تفعيل GPS ومنح المتصفح صلاحية الموقع.");
           }
@@ -548,24 +512,15 @@
       );
     }
 
-    async function fetchOrdersForCurrentSession() {
-      const url = `${WEB_APP_URL}?action=loginAndGetOrders&sheetName=${encodeURIComponent(currentSession.sheetName)}&repName=${encodeURIComponent(currentSession.repName)}&pin=${encodeURIComponent(currentSession.pin)}&_t=${Date.now()}`;
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) {
-        throw new Error("فشل الاتصال بالخادم (HTTP " + res.status + ")");
-      }
-      return await res.json();
-    }
-
     async function loginAndLoadOrders() {
       hideBoxMessage("loginMsg");
 
+      const sheetName = document.getElementById("sheetSelect").value.trim();
       const repName = document.getElementById("repNameInput").value.trim();
       const pin = document.getElementById("pinInput").value.trim();
-      const sheetName = document.getElementById("sheetSelect").value.trim() || "1/12/2026";
 
-      if (!repName || !pin) {
-        showBoxMessage("loginMsg", "يرجى إدخال اسم المندوب والكود السري.", "error");
+      if (!sheetName || !repName || !pin) {
+        showBoxMessage("loginMsg", "يرجى إدخال اسم الشيت واسم المندوب والكود السري.", "error");
         return;
       }
 
@@ -573,47 +528,42 @@
       btn.disabled = true;
       btn.textContent = "جاري التحقق...";
 
-      currentSession = {
-        sheetName,
-        repName,
-        pin,
-        defaultCommission: 25
-      };
-
       try {
-        const data = await fetchOrdersForCurrentSession();
+        const url = `${WEB_APP_URL}?action=loginAndGetOrders&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(repName)}&pin=${encodeURIComponent(pin)}&_t=${Date.now()}`;
+        const res = await fetch(url, { cache: "no-store" });
+        const data = await res.json();
 
         if (!data || data.status !== "success") {
-          showBoxMessage("loginMsg", (data && data.message) || "تعذر تسجيل الدخول. راجع الاسم والكود السري أو اسم الشيت.", "error");
+          showBoxMessage("loginMsg", (data && data.message) || "تعذر تسجيل الدخول.", "error");
           return;
         }
 
-        currentSession.defaultCommission = data.defaultCommission || 25;
+        currentSession = {
+          sheetName,
+          repName,
+          pin,
+          defaultCommission: data.defaultCommission || 25
+        };
         allOrders = Array.isArray(data.orders) ? data.orders : [];
 
         document.getElementById("loginCard").classList.add("hidden");
         document.getElementById("ordersScreen").classList.remove("hidden");
         document.getElementById("activeRepTitle").textContent = "المندوب: " + currentSession.repName;
+        document.getElementById("activeSheetTitle").textContent = "الشيت: " + currentSession.sheetName;
 
         updateStats();
         renderFilteredOrders();
 
-        // أخذ الموافقة مرة واحدة فقط بعد فتح التطبيق والدخول
+        // أخذ الموافقة مرة واحدة فقط بعد نجاح الدخول
         setTimeout(() => {
           requestLocationConsentOnce(currentSession.repName, currentSession.pin, WEB_APP_URL);
-        }, 250);
+        }, 300);
       } catch (err) {
-        showBoxMessage("loginMsg", "تعذر الاتصال بالسيرفر: " + (err && err.message ? err.message : "تحقق من الإنترنت ورابط السكريبت"), "error");
+        showBoxMessage("loginMsg", "حدث خطأ أثناء الاتصال بالسيرفر.", "error");
       } finally {
         btn.disabled = false;
         btn.textContent = "دخول وعرض الأوردرات";
       }
-    }
-
-    async function onMonthChanged() {
-      const sel = document.getElementById("sheetSelect");
-      currentSession.sheetName = sel ? sel.value.trim() : "1/12/2026";
-      await refreshOrders();
     }
 
     async function refreshOrders() {
@@ -621,14 +571,15 @@
       hideBoxMessage("globalMsg");
 
       try {
-        const data = await fetchOrdersForCurrentSession();
+        const url = `${WEB_APP_URL}?action=loginAndGetOrders&sheetName=${encodeURIComponent(currentSession.sheetName)}&repName=${encodeURIComponent(currentSession.repName)}&pin=${encodeURIComponent(currentSession.pin)}&_t=${Date.now()}`;
+        const res = await fetch(url, { cache: "no-store" });
+        const data = await res.json();
+
         if (data && data.status === "success") {
           allOrders = Array.isArray(data.orders) ? data.orders : [];
           updateStats();
           renderFilteredOrders();
-          showBoxMessage("globalMsg", "تم تحميل أوردرات شهر " + currentSession.sheetName + " بنجاح.", "success");
-        } else {
-          showBoxMessage("globalMsg", (data && data.message) || "تعذر تحميل بيانات الشهر المختار.", "error");
+          showBoxMessage("globalMsg", "تم تحديث قائمة الأوردرات بنجاح.", "success");
         }
       } catch (err) {
         showBoxMessage("globalMsg", "تعذر تحديث الأوردرات.", "error");
@@ -636,7 +587,7 @@
     }
 
     function logoutRep() {
-      currentSession = { sheetName: "1/12/2026", repName: "", pin: "", defaultCommission: 25 };
+      currentSession = { sheetName: "", repName: "", pin: "", defaultCommission: 25 };
       allOrders = [];
       document.getElementById("pinInput").value = "";
       document.getElementById("searchInput").value = "";
@@ -697,7 +648,7 @@
       });
 
       if (!filtered.length) {
-        listEl.innerHTML = `<div class="card" style="text-align:center; color:var(--muted);">لا توجد أوردرات مطابقة في شهر ${currentSession.sheetName}.</div>`;
+        listEl.innerHTML = `<div class="card" style="text-align:center; color:var(--muted);">لا توجد أوردرات مطابقة.</div>`;
         return;
       }
 
