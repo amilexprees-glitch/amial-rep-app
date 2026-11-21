@@ -14,7 +14,7 @@
 
   <script>
     (function enforceFreshBuild() {
-      const BUILD_TAG = "v3.6-20261202";
+      const BUILD_TAG = "v3.6-20261203";
       const LOGO_FILE = "./1726248526371.jpeg";
       const url = new URL(window.location.href);
       const currentBuild = url.searchParams.get("_b");
@@ -225,12 +225,18 @@
     .order-card.partial { border-right: 5px solid #0ea5e9; }
     .order-card.returned { border-right: 5px solid var(--danger); opacity: 0.9; }
     .order-card.pending { border-right: 5px solid var(--warning); }
+    .order-card.locked { border-right: 5px solid #94a3b8; opacity: 0.88; }
 
-    .client-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .client-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
     .client-name { font-size: 16px; font-weight: 800; color: #fff; margin: 0; }
+    .badges-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
     .price-badge {
       background: rgba(56, 189, 248, 0.15); color: var(--primary); padding: 4px 11px;
       border-radius: 999px; font-weight: 900; font-size: 14px; border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+    .lock-badge {
+      background: rgba(148, 163, 184, 0.18); color: #e2e8f0; padding: 4px 9px;
+      border-radius: 999px; font-weight: 800; font-size: 11px; border: 1px solid rgba(148, 163, 184, 0.35);
     }
 
     .info-line { font-size: 13px; color: #cbd5e1; margin: 5px 0; line-height: 1.5; }
@@ -252,9 +258,11 @@
       flex: 1; padding: 10px; border-radius: 10px; background: #0f172a;
       color: #fff; border: 1px solid var(--primary); font-size: 13px; font-weight: bold;
     }
+    .status-select:disabled { opacity: 0.6; cursor: not-allowed; border-color: var(--border); }
     .btn-save-status {
       background: var(--success); color: #002b11; border: none; padding: 0 18px; border-radius: 10px; font-weight: 900; font-size: 14px; cursor: pointer;
     }
+    .btn-save-status:disabled { background: #475569; color: #cbd5e1; cursor: not-allowed; }
     .loader { text-align: center; padding: 30px; color: var(--primary); font-weight: bold; display: none; }
 
     .modal-backdrop {
@@ -408,7 +416,8 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz7XJhFjGuwmQq67dwjsfqzS21VISPUr_ohpcl_WCnXz4p_-KYJ2TH8rREAvMFq7fW6aQ/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwSo5jfsBQILC5je937avI-9sJjUtV93ZwcJq-rHJwZ27qOYzhNM8JAfHUVp9jigrUfQ/exec";
+    const LOCK_KEYWORDS_NORM = ["شبراوى", "راقي","محمد","محمود"];
 
     let currentRep = "";
     let currentPin = "";
@@ -417,6 +426,23 @@
     let activeFilter = "all";
     let searchQuery = "";
     let pendingModalData = null;
+
+    function normalizeAr(str) {
+      return String(str || "")
+        .trim()
+        .replace(/\s+/g, " ")
+        .replace(/[أإآ]/g, "ا")
+        .replace(/ة/g, "ه")
+        .replace(/ى/g, "ي")
+        .toLowerCase();
+    }
+
+    function isOrderLocked(order) {
+      if (order && order.isLocked === true) return true;
+      const normL = normalizeAr(order && order.confirmL);
+      if (!normL) return false;
+      return LOCK_KEYWORDS_NORM.some(k => normL.includes(k));
+    }
 
     window.onload = function () {
       if (window.__APP_ICON_URL__) {
@@ -683,23 +709,28 @@
         const priceNum = parseFloat(order.price) || 0;
         const collectedNum = parseFloat(order.collectedK) || 0;
         const statusType = getOrderStatusType(order);
+        const locked = isOrderLocked(order);
 
         const fullAddress = [order.governorate, order.address].filter(Boolean).join(" - ");
         const prefilledMsg = `مساء الخير يا فندم, بنتواصل مع حضرتك لتأكيد الطلب الخاص بكم:\nلتأكيد الطلب و بدء عمليه الشحن\nبرجاء الرد بكلمه تأكيد\nو ارسال العنوان تفصيلي مع علامه مميزه بالعنوان (سوبرماركت / مدرسه / قهوه / مسجد ... ), او لوكيشن و لو في رقم اضافي لحضرتك ممكن تبعته علشان المندوب يقدر يسلم حضرتك الطلب\nشكرا لزوق حضرتك`;
         const encodedMsg = encodeURIComponent(prefilledMsg);
 
         const card = document.createElement("div");
-        card.className = `order-card ${statusType}`;
+        card.className = `order-card ${locked ? "locked" : statusType}`;
         card.innerHTML = `
           <div class="client-row">
             <h3 class="client-name">${order.clientName || "بدون اسم"}</h3>
-            <span class="price-badge">${priceNum} ج.م</span>
+            <div class="badges-wrap">
+              ${locked ? `<span class="lock-badge">🔒 مقفل</span>` : ""}
+              <span class="price-badge">${priceNum} ج.م</span>
+            </div>
           </div>
           <div class="info-line"><span>📍 العنوان:</span> ${fullAddress || "غير مسجل"}</div>
           <div class="info-line"><span>📱 الهاتف:</span> <b dir="ltr">${phone || "غير مسجل"}</b> | <span>🏷️ الراسل:</span> ${order.sender || "-"}</div>
           <div class="info-line"><span>📅 التاريخ (X):</span> ${order.date || "غير محدد"}</div>
           <div class="info-line"><span>💰 الوارد المسجل (K):</span> <b style="color:var(--success);">${collectedNum} ج.م</b></div>
           <div class="info-line"><span>📝 ملاحظات (N):</span> ${order.notesN || "-"}</div>
+          ${order.confirmL ? `<div class="info-line"><span>📌 الحالة / التقفيل (L):</span> <b>${order.confirmL}</b></div>` : ""}
 
           <div class="contact-actions">
             <a href="${phone ? `tel:${phone}` : '#'}" class="c-btn btn-call">📞 اتصال</a>
@@ -708,13 +739,13 @@
           </div>
 
           <div class="status-controls">
-            <select id="select-${order.rowIndex}" class="status-select" onchange="handleStatusChoice(${order.rowIndex}, ${priceNum})">
+            <select id="select-${order.rowIndex}" class="status-select" ${locked ? "disabled" : ""} onchange="handleStatusChoice(${order.rowIndex}, ${priceNum})">
               <option value="تحت التسليم" ${statusType === "pending" ? "selected" : ""}>⏳ تحت التسليم</option>
               <option value="تم التسليم" ${statusType === "delivered" ? "selected" : ""}>✅ تم التسليم</option>
               <option value="جزئي" ${statusType === "partial" ? "selected" : ""}>⚡ جزئي</option>
               <option value="مرتجع" ${statusType === "returned" ? "selected" : ""}>❌ مرتجع</option>
             </select>
-            <button id="btn-${order.rowIndex}" class="btn-save-status" onclick="handleConfirmButton(${order.rowIndex}, ${priceNum})">تأكيد</button>
+            <button id="btn-${order.rowIndex}" class="btn-save-status" ${locked ? "disabled" : ""} onclick="handleConfirmButton(${order.rowIndex}, ${priceNum})">${locked ? "🔒 مقفل" : "تأكيد"}</button>
           </div>
         `;
         listEl.appendChild(card);
@@ -722,6 +753,11 @@
     }
 
     function handleStatusChoice(rowIndex, originalPrice) {
+      const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex);
+      if (isOrderLocked(orderObj)) {
+        renderOrders();
+        return;
+      }
       const selectedStatus = document.getElementById(`select-${rowIndex}`).value;
       if (selectedStatus === "تم التسليم" || selectedStatus === "جزئي" || selectedStatus === "مرتجع") {
         openStatusModal(rowIndex, originalPrice, selectedStatus);
@@ -729,6 +765,11 @@
     }
 
     function handleConfirmButton(rowIndex, originalPrice) {
+      const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex);
+      if (isOrderLocked(orderObj)) {
+        alert("هذا الأوردر مقفل ولا يمكن تعديله.");
+        return;
+      }
       const selectedStatus = document.getElementById(`select-${rowIndex}`).value;
       if (selectedStatus === "تم التسليم" || selectedStatus === "جزئي" || selectedStatus === "مرتجع") {
         openStatusModal(rowIndex, originalPrice, selectedStatus);
@@ -739,6 +780,10 @@
 
     function openStatusModal(rowIndex, originalPrice, statusVal) {
       const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex) || {};
+      if (isOrderLocked(orderObj)) {
+        alert("هذا الأوردر مقفل ولا يمكن تعديله.");
+        return;
+      }
       pendingModalData = { rowIndex, originalPrice, statusVal };
 
       document.getElementById("modalTitle").innerText = `حالة الأوردر: ${statusVal}`;
@@ -809,12 +854,18 @@
             } else {
               orderObj.notesN = finalNotes;
             }
+            orderObj.isLocked = isOrderLocked(orderObj);
           }
           if (btn) btn.innerText = "✔ تم";
           setTimeout(() => renderOrders(), 300);
         } else {
+          if (json.locked) {
+            const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex);
+            if (orderObj) orderObj.isLocked = true;
+            renderOrders();
+          }
           alert(json.message || "حدث خطأ أثناء التحديث.");
-          if (btn) {
+          if (btn && !json.locked) {
             btn.disabled = false;
             btn.innerText = "تأكيد";
           }
