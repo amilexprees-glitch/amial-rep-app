@@ -14,7 +14,7 @@
 
   <script>
     (function enforceFreshBuild() {
-      const BUILD_TAG = "v3.5-20261121";
+      const BUILD_TAG = "v3.6-20261121";
       const LOGO_FILE = "./1726248526371.jpeg";
       const url = new URL(window.location.href);
       const currentBuild = url.searchParams.get("_b");
@@ -248,7 +248,7 @@
         <img id="loginLogoImg" src="./1726248526371.jpeg" alt="AMIAl EXPRESS" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:28px;font-weight:900;color:#38bdf8;\'>A</span>';" />
       </div>
       <h1 class="login-title">AMIAl EXPRESS</h1>
-      <p class="login-sub">بوابة المناديب الذكية (v3.5) - سجل الدخول لعرض أوردراتك</p>
+      <p class="login-sub">بوابة المناديب الذكية (v3.6) - سجل الدخول لعرض أوردراتك</p>
 
       <input type="text" id="loginRepInput" class="auth-input" placeholder="اسم المندوب (مثال: حبيبة)" />
       <input type="password" id="loginPinInput" class="auth-input" inputmode="numeric" placeholder="الكود السري (PIN)" />
@@ -264,7 +264,7 @@
         <div class="brand-wrap">
           <img id="headerLogoImg" src="./1726248526371.jpeg" alt="Logo" class="header-logo" onerror="this.style.display='none';" />
           <h1 class="brand-title">AMIAl EXPRESS</h1>
-          <span class="version-tag">v3.5</span>
+          <span class="version-tag">v3.6</span>
         </div>
         <button class="btn-logout" onclick="logoutRep()">🚪 خروج</button>
       </div>
@@ -349,7 +349,7 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz-fVrmg2gUKfg_D6myIK2Q_AzmeeaNwNJ05AF3VGZNWnXzpMZxQPO0vpfWeiwTFHTtpw/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwmeef1EYXEnfApPM23FTJz9lvWhjaTC-cKHschoPBH5gIrnsbVkVjBNYFw0erPN167NQ/exec";
 
     let currentRep = "";
     let currentPin = "";
@@ -672,7 +672,7 @@
 
       const { rowIndex, statusVal } = pendingModalData;
       const rawPrice = document.getElementById("modalPriceInput").value.trim();
-      const finalNotes = document.getElementById("modalNotesInput").value;
+      const finalNotes = document.getElementById("modalNotesInput").value.trim();
 
       document.getElementById("statusModal").classList.remove("show");
       pendingModalData = null;
@@ -702,6 +702,8 @@
             orderObj.confirmL = json.savedStatus || statusVal;
             if (json.savedNotes !== undefined) {
               orderObj.notesN = json.savedNotes;
+            } else {
+              orderObj.notesN = finalNotes;
             }
           }
           if (btn) btn.innerText = "✔ تم";
