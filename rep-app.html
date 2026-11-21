@@ -14,7 +14,7 @@
 
   <script>
     (function enforceFreshBuild() {
-      const BUILD_TAG = "v3.6-20261121";
+      const BUILD_TAG = "v3.6-20261202";
       const LOGO_FILE = "./1726248526371.jpeg";
       const url = new URL(window.location.href);
       const currentBuild = url.searchParams.get("_b");
@@ -164,12 +164,58 @@
     .sum-num { font-size: 15px; font-weight: 900; display: block; margin-bottom: 3px; }
     .sum-lbl { font-size: 11px; color: var(--muted); }
 
-    .filter-tabs { display: flex; gap: 6px; padding: 0 14px 12px; overflow-x: auto; }
+    .filter-tabs { display: flex; gap: 6px; padding: 0 14px 10px; overflow-x: auto; }
     .f-tab {
       flex: 1; padding: 8px 4px; border-radius: 10px; border: 1px solid var(--border);
       background: var(--card); color: var(--muted); font-size: 11px; font-weight: bold; text-align: center; cursor: pointer; white-space: nowrap;
     }
     .f-tab.active { background: var(--primary); color: #00111f; border-color: var(--primary); }
+
+    .search-box-wrap {
+      padding: 0 14px 12px;
+      position: relative;
+    }
+    .search-input {
+      width: 100%;
+      padding: 10px 38px 10px 36px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .search-input::placeholder { color: var(--muted); font-weight: 400; }
+    .search-input:focus { outline: none; border-color: var(--primary); }
+    .search-icon {
+      position: absolute;
+      right: 25px;
+      top: 50%;
+      transform: translateY(calc(-50% - 6px));
+      font-size: 14px;
+      pointer-events: none;
+      opacity: 0.85;
+    }
+    .btn-clear-search {
+      display: none;
+      position: absolute;
+      left: 22px;
+      top: 50%;
+      transform: translateY(calc(-50% - 6px));
+      background: rgba(148, 163, 184, 0.2);
+      color: var(--text);
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+      line-height: 22px;
+      text-align: center;
+      padding: 0;
+    }
+    .btn-clear-search.visible { display: inline-block; }
 
     .orders-container { padding: 0 14px; display: grid; gap: 14px; }
     .order-card {
@@ -271,6 +317,7 @@
       <div class="control-bar">
         <div class="rep-badge" id="activeRepLabel">---</div>
         <select id="sheetSelect" class="sheet-select" onchange="loadAuthenticatedOrders()">
+          <option value="1/12/2026">شهر 12</option>
           <option value="1/11/2026">شهر 11</option>
           <option value="1/10/2026">شهر 10</option>
         </select>
@@ -326,6 +373,18 @@
       <div class="f-tab" onclick="setFilter('returned', this)">❌ مرتجع</div>
     </div>
 
+    <div class="search-box-wrap">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        id="searchInput"
+        class="search-input"
+        placeholder="ابحث بالاسم، الهاتف، العنوان، الراسل، أو السعر..."
+        oninput="handleSearchInput()"
+      />
+      <button type="button" id="clearSearchBtn" class="btn-clear-search" title="مسح البحث" onclick="clearSearch()">✕</button>
+    </div>
+
     <div id="loader" class="loader">⏳ جاري التحميل...</div>
     <div class="orders-container" id="ordersList"></div>
   </div>
@@ -349,13 +408,14 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwpnnsRuip7llxE48BwleUTnTOPEqypHP6X57u7_oTetjzWYTU6a0RONe7xHYzI_yuPhg/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx_5lqpK5u2YabVZgUpe0bm7LosyftbzmeXHrtU8o7-qEfnDW41IWCQVn6J05r3ORM0yA/exec";
 
     let currentRep = "";
     let currentPin = "";
     let currentOrdersCache = [];
     let defaultCommRate = 25;
     let activeFilter = "all";
+    let searchQuery = "";
     let pendingModalData = null;
 
     window.onload = function () {
@@ -444,6 +504,11 @@
       currentRep = "";
       currentPin = "";
       currentOrdersCache = [];
+      searchQuery = "";
+      const searchEl = document.getElementById("searchInput");
+      if (searchEl) searchEl.value = "";
+      const clearBtn = document.getElementById("clearSearchBtn");
+      if (clearBtn) clearBtn.classList.remove("visible");
       document.getElementById("appScreen").style.display = "none";
       document.getElementById("loginScreen").style.display = "flex";
       document.getElementById("loginPinInput").value = "";
@@ -480,6 +545,44 @@
       document.querySelectorAll(".f-tab").forEach(t => t.classList.remove("active"));
       tabEl.classList.add("active");
       renderOrders();
+    }
+
+    function handleSearchInput() {
+      const inputEl = document.getElementById("searchInput");
+      const clearBtn = document.getElementById("clearSearchBtn");
+      searchQuery = (inputEl ? inputEl.value : "").trim().toLowerCase();
+      if (clearBtn) {
+        clearBtn.classList.toggle("visible", searchQuery.length > 0);
+      }
+      renderOrders();
+    }
+
+    function clearSearch() {
+      const inputEl = document.getElementById("searchInput");
+      if (inputEl) {
+        inputEl.value = "";
+        inputEl.focus();
+      }
+      searchQuery = "";
+      const clearBtn = document.getElementById("clearSearchBtn");
+      if (clearBtn) clearBtn.classList.remove("visible");
+      renderOrders();
+    }
+
+    function matchesSearchQuery(order, query) {
+      if (!query) return true;
+      const haystacks = [
+        order.clientName,
+        order.phone,
+        order.governorate,
+        order.address,
+        order.sender,
+        order.notesN,
+        order.confirmL,
+        String(order.price || ""),
+        String(order.collectedK || "")
+      ];
+      return haystacks.some(val => String(val || "").toLowerCase().includes(query));
     }
 
     function formatEgyptianPhone(rawPhone) {
@@ -563,13 +666,14 @@
 
       const filteredOrders = dayOrders.filter(order => {
         const statusType = getOrderStatusType(order);
-        if (activeFilter === "all") return true;
-        return statusType === activeFilter;
+        const matchesTab = activeFilter === "all" || statusType === activeFilter;
+        return matchesTab && matchesSearchQuery(order, searchQuery);
       });
 
       if (filteredOrders.length === 0) {
         const dayLabel = selectedDay === "all" ? "كل الأيام" : `يوم ${selectedDay}`;
-        listEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted);">لا توجد أوردرات مطابقة للفلترة في (${dayLabel}).</div>`;
+        const searchHint = searchQuery ? ` المطابقة للبحث "${searchQuery}"` : "";
+        listEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted);">لا توجد أوردرات${searchHint} في (${dayLabel}).</div>`;
         return;
       }
 
