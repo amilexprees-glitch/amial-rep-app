@@ -839,6 +839,7 @@
 
       try {
         const url = `${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${encodeURIComponent(priceParamStr)}¬es=${encodeURIComponent(finalNotes)}&_t=${Date.now()}`;
+        const res = await fetch(url, { cache: "no-store" });
         const json = await res.json();
 
         if (json.status === "success") {
