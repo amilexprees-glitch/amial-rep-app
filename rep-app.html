@@ -13,7 +13,7 @@
 <title>تطبيق المناديب - AMIAl EXPRESS V7 CLEAN</title>
 <script>
 (function enforceFreshBuild(){
-  const BUILD_TAG="v7-clean-no-barcode-20261203";
+  const BUILD_TAG="v7-return-notes-only-20261203";
   const LOGO_FILE="./1726248526371.jpeg";
   const url=new URL(window.location.href);
   const currentBuild=url.searchParams.get("_b");
@@ -185,8 +185,6 @@ body{margin:0;background:var(--bg);color:var(--text);padding-bottom:100px}
 <div class="progress-txt" id="progressTxt">ابدأ يومك يا بطل 💪</div>
 </div>
 
-<!-- تم حذف صندوق الباركود نهائياً - البحث بالاسم والهاتف موجود تحت -->
-
 <div class="sort-bar">
 <button class="sort-btn active" id="sortManualBtn" onclick="setSortMode('manual')">↕️ ترتيب يدوي</button>
 <button class="sort-btn" id="sortNameBtn" onclick="setSortMode('name')">🔤 ترتيب بالاسم</button>
@@ -209,7 +207,6 @@ body{margin:0;background:var(--bg);color:var(--text);padding-bottom:100px}
 <div class="f-tab" onclick="setFilter('returned',this)">❌ مرتجع</div>
 </div>
 
-<!-- البحث الوحيد - بالاسم والهاتف والعنوان -->
 <div class="search-box-wrap">
 <span class="search-icon">🔍</span>
 <input type="text" id="searchInput" class="search-input" placeholder="ابحث بالاسم، الهاتف، العنوان، الراسل، أو السعر..." oninput="handleSearchInput()"/>
@@ -229,14 +226,19 @@ body{margin:0;background:var(--bg);color:var(--text);padding-bottom:100px}
 <button onclick="loadAuthenticatedOrders()">🔄<span>تحديث</span></button>
 </div>
 
+<!-- المودال المعدل: لما يبقى مرتجع، السعر بيختفي والكتابة بس هي اللي بتظهر -->
 <div id="statusModal" class="modal-backdrop"><div class="modal-box">
 <h3 id="modalTitle" class="modal-title">تحديث حالة الأوردر</h3>
 <p id="modalSub" class="modal-sub">أدخل السعر (عمود K) والملاحظات (عمود N)</p>
+<div id="priceSection">
 <label class="modal-label">السعر / المبلغ (عمود K):</label>
 <div style="display:flex;gap:6px;margin-bottom:12px"><button onclick="setModalPrice('full')" style="flex:1;background:#0f172a;border:1px solid var(--border);color:#fff;padding:8px;border-radius:8px;cursor:pointer;font-weight:700">المبلغ كامل</button><button onclick="setModalPrice('half')" style="flex:1;background:#0f172a;border:1px solid var(--border);color:#fff;padding:8px;border-radius:8px;cursor:pointer;font-weight:700">نصف المبلغ</button><button onclick="setModalPrice('0')" style="flex:1;background:#0f172a;border:1px solid var(--border);color:#fff;padding:8px;border-radius:8px;cursor:pointer;font-weight:700">صفر</button></div>
 <input type="number" id="modalPriceInput" class="modal-input" inputmode="decimal" placeholder="أدخل المبلغ..."/>
+</div>
+<div id="returnNoteHint" style="display:none;background:rgba(239,68,68,.12);border:1px dashed #ef4444;border-radius:10px;padding:10px;font-size:12.5px;margin-bottom:12px;line-height:1.7">❌ <b>مرتجع / لاغي</b><br>الوارد (K) هيفضل زي ما هو في الشيت عشان شحن المندوب يتحسب صح.<br>اكتب هنا سبب الرجوع بس.</div>
 <label class="modal-label">الملاحظات (عمود N):</label>
 <input type="text" id="modalNotesInput" class="modal-input" placeholder="اكتب أي شيء هنا..."/>
+<div id="quickReturnNotes" style="display:none;gap:6px;flex-wrap:wrap;margin-bottom:12px"><button onclick="setReturnNote('لاغي')" style="background:#0f172a;border:1px solid #ef4444;color:#f87171;padding:7px 12px;border-radius:999px;cursor:pointer;font-weight:700;font-size:12px">لاغي</button><button onclick="setReturnNote('لاغي - لم يرد')" style="background:#0f172a;border:1px solid #ef4444;color:#f87171;padding:7px 12px;border-radius:999px;cursor:pointer;font-weight:700;font-size:12px">لاغي - لم يرد</button><button onclick="setReturnNote('لاغي - رفض الاستلام')" style="background:#0f172a;border:1px solid #ef4444;color:#f87171;padding:7px 12px;border-radius:999px;cursor:pointer;font-weight:700;font-size:12px">لاغي - رفض الاستلام</button><button onclick="setReturnNote('لاغي - العنوان غلط')" style="background:#0f172a;border:1px solid #ef4444;color:#f87171;padding:7px 12px;border-radius:999px;cursor:pointer;font-weight:700;font-size:12px">لاغي - العنوان غلط</button></div>
 <div class="modal-actions"><button class="btn-modal-save" onclick="confirmModalUpdate()">✔ حفظ وإرسال</button><button class="btn-modal-cancel" onclick="closeStatusModal()">إلغاء</button></div>
 </div></div>
 
@@ -297,7 +299,7 @@ function saveLiveToStorage(lat,lng){
   try{
     let live=JSON.parse(localStorage.getItem('amial_live_reps')||"[]");
     let deliveredCount=currentOrdersCache.filter(o=>getOrderStatusType(o)==="delivered").length;
-    let cashCount=currentOrdersCache.reduce((sum,o)=>sum+(parseFloat(o.collectedK)||0),0);
+    let cashCount=currentOrdersCache.reduce((sum,o)=>{ let isRet = String(o.confirmL||"").trim()==="مرتجع"; return sum + (isRet?0:(parseFloat(o.collectedK)||0)); },0);
     let previewText=`صفحة ${currentRep} - ${deliveredCount}/${currentOrdersCache.length} تم - ${cashCount.toLocaleString()} ج.م`;
     let obj={name:currentRep,lat:lat||30.7865,lng:lng||31.0004,area:lat?`GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)}`:"الموقع غير مفعل - أونلاين",lastSeen:Date.now(),orders:currentOrdersCache.length,delivered:deliveredCount,cash:cashCount,phone:"",img:`https://via.placeholder.com/400x200/0f172a/38bdf8?text=${encodeURIComponent(previewText)}`,sheet:document.getElementById("sheetSelect")?document.getElementById("sheetSelect").value:"",status:"online"};
     let idx=live.findIndex(r=>r.name===currentRep);
@@ -402,7 +404,29 @@ function formatEgyptianPhone(r){let c=String(r||"").replace(/[^0-9]/g,"");if(c.l
 function extractDayFromColumnX(d){if(!d)return "";let s=String(d).trim();let m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);if(m)return String(parseInt(m[1]));return ""}
 function getOrderStatusType(o){let p=parseFloat(o.price)||0;let c=parseFloat(o.collectedK)||0;let l=String(o.confirmL||"").trim();if(l==="مرتجع")return "returned";if(l==="جزئي"||(c>0&&p>0&&c<p))return "partial";if(l==="تم التسليم"||(c>0&&p>0&&c>=p))return "delivered";return "pending"}
 function getOrdersBySelectedDay(){let d=document.getElementById("daySelect").value;if(d==="all")return currentOrdersCache;return currentOrdersCache.filter(o=>extractDayFromColumnX(o.date)===d)}
-function recalculateTotals(dayOrders){let total=dayOrders.length,del=0,cash=0,comm=0;dayOrders.forEach(o=>{let c=parseFloat(o.collectedK)||0;let st=getOrderStatusType(o);if(c>0)cash+=c;if(st==="delivered"||st==="partial"||c>0){del++;comm+=(o.commissionR>0?o.commissionR:defaultCommRate)}});document.getElementById("totalOrdersCount").innerText=total;document.getElementById("deliveredOrdersCount").innerText=del;document.getElementById("pendingOrdersCount").innerText=total-del;document.getElementById("totalCashCollected").innerText=cash.toLocaleString()+" ج.م";document.getElementById("totalCommission").innerText=comm.toLocaleString()+" ج.م";document.getElementById("netToPay").innerText=(cash-comm).toLocaleString()+" ج.م";let pct=total?Math.round(del/total*100):0;document.getElementById("progressBar").style.width=pct+"%";document.getElementById("progressTxt").innerText=pct>=100?"🎉 خلصت كل أوردراتك يا بطل!":pct>=50?`ممتاز! أنجزت ${pct}% - باقي ${total-del} أوردر`:`ابدأ يومك يا بطل 💪 - أنجزت ${pct}%`}
+function recalculateTotals(dayOrders){
+  let total=dayOrders.length,del=0,cash=0,comm=0;
+  dayOrders.forEach(o=>{
+    let c=parseFloat(o.collectedK)||0;
+    let st=getOrderStatusType(o);
+    // المرتجع: فلوسه مش بتتحسب في التحصيل، لكن شحنه بيتحسب عشان المندوب راح المشوار
+    let isReturned = st==="returned";
+    if(!isReturned && c>0) cash+=c;
+    // العمولة / الشحن: بتتحسب على كل أوردر اتنفذ مشواره حتى المرتجع
+    if(st==="delivered"||st==="partial"||st==="returned"||c>0){ if(st!=="returned") del++; comm+=(o.commissionR>0?o.commissionR:defaultCommRate); }
+    // ملحوظة: del هنا = تم التسليم + جزئي بس، المرتجع مش بيتحسب تم، لكن عمولته/شحنه بيتحسب
+    if(st==="returned"){ /* شحن المرتجع محسوب في comm فوق */ }
+  });
+  document.getElementById("totalOrdersCount").innerText=total;
+  document.getElementById("deliveredOrdersCount").innerText=del;
+  document.getElementById("pendingOrdersCount").innerText=total-del;
+  document.getElementById("totalCashCollected").innerText=cash.toLocaleString()+" ج.م";
+  document.getElementById("totalCommission").innerText=comm.toLocaleString()+" ج.م";
+  document.getElementById("netToPay").innerText=(cash-comm).toLocaleString()+" ج.م";
+  let pct=total?Math.round(del/total*100):0;
+  document.getElementById("progressBar").style.width=pct+"%";
+  document.getElementById("progressTxt").innerText=pct>=100?"🎉 خلصت كل أوردراتك يا بطل!":pct>=50?`ممتاز! أنجزت ${pct}% - باقي ${total-del} أوردر`:`ابدأ يومك يا بطل 💪 - أنجزت ${pct}%`;
+}
 function renderOrders(){
   let list=document.getElementById("ordersList");let day=document.getElementById("daySelect").value;list.innerHTML="";
   let dayOrders=getOrdersBySelectedDay();recalculateTotals(dayOrders);
@@ -467,21 +491,56 @@ function copyDailySummary(){let t=`📦 ملخص ${currentRep} - ${document.getE
 function handleStatusChoice(row,price){let o=currentOrdersCache.find(x=>x.rowIndex===row);if(isOrderLocked(o)){renderOrders();return}let s=document.getElementById(`select-${row}`).value;if(s==="تم التسليم"||s==="جزئي"||s==="مرتجع")openStatusModal(row,price,s)}
 function handleConfirmButton(row,price){let o=currentOrdersCache.find(x=>x.rowIndex===row);if(isOrderLocked(o)){alert("هذا الأوردر مقفل");return}let s=document.getElementById(`select-${row}`).value;if(s==="تم التسليم"||s==="جزئي"||s==="مرتجع")openStatusModal(row,price,s);else sendUpdateToSheet(row,s,"","")}
 function setModalPrice(type){if(!pendingModalData)return;let inp=document.getElementById("modalPriceInput");if(type==="full")inp.value=pendingModalData.originalPrice;else if(type==="half")inp.value=Math.round(pendingModalData.originalPrice/2);else inp.value=""}
-function openStatusModal(row,price,status){let o=currentOrdersCache.find(x=>x.rowIndex===row)||{};if(isOrderLocked(o)){alert("مقفل");return}pendingModalData={rowIndex:row,originalPrice:price,statusVal:status};document.getElementById("modalTitle").innerText=`حالة الأوردر: ${status}`;document.getElementById("modalSub").innerText=`العميل: ${o.clientName||""} | السعر الأصلي: ${price} ج.م`;let pi=document.getElementById("modalPriceInput");if(status==="تم التسليم")pi.value=price>0?price:(o.collectedK||"");else if(status==="جزئي")pi.value=o.collectedK>0?o.collectedK:"";else pi.value="";document.getElementById("modalNotesInput").value="";document.getElementById("statusModal").classList.add("show");setTimeout(()=>pi.focus(),100)}
+function setReturnNote(txt){document.getElementById("modalNotesInput").value=txt;document.getElementById("modalNotesInput").focus()}
+function openStatusModal(row,price,status){
+  let o=currentOrdersCache.find(x=>x.rowIndex===row)||{};if(isOrderLocked(o)){alert("مقفل");return}
+  pendingModalData={rowIndex:row,originalPrice:price,statusVal:status};
+  document.getElementById("modalTitle").innerText=`حالة الأوردر: ${status}`;
+  document.getElementById("modalSub").innerText=`العميل: ${o.clientName||""} | السعر الأصلي: ${price} ج.م`;
+  let isReturn = (status==="مرتجع");
+  // مرتجع: اخفي خانة السعر كلها، واظهر الكتابة بس + أزرار لاغي
+  document.getElementById("priceSection").style.display = isReturn ? "none" : "block";
+  document.getElementById("returnNoteHint").style.display = isReturn ? "block" : "none";
+  document.getElementById("quickReturnNotes").style.display = isReturn ? "flex" : "none";
+  document.getElementById("modalSub").innerText = isReturn ? `العميل: ${o.clientName||""} | الوارد هيفضل ${o.collectedK||price} ج.م في الشيت عشان الشحن` : `العميل: ${o.clientName||""} | السعر الأصلي: ${price} ج.م`;
+  let pi=document.getElementById("modalPriceInput");
+  if(status==="تم التسليم") pi.value=price>0?price:(o.collectedK||"");
+  else if(status==="جزئي") pi.value=o.collectedK>0?o.collectedK:"";
+  else pi.value="";
+  document.getElementById("modalNotesInput").value = isReturn ? (o.notesN||"") : "";
+  document.getElementById("statusModal").classList.add("show");
+  setTimeout(()=>{ if(isReturn) document.getElementById("modalNotesInput").focus(); else pi.focus(); },100);
+}
 function closeStatusModal(){document.getElementById("statusModal").classList.remove("show");pendingModalData=null;renderOrders()}
-async function confirmModalUpdate(){if(!pendingModalData)return;let {rowIndex,statusVal}=pendingModalData;let p=document.getElementById("modalPriceInput").value.trim();let n=document.getElementById("modalNotesInput").value.trim();document.getElementById("statusModal").classList.remove("show");pendingModalData=null;await sendUpdateToSheet(rowIndex,statusVal,p,n)}
+async function confirmModalUpdate(){
+  if(!pendingModalData)return;
+  let {rowIndex,statusVal}=pendingModalData;
+  let isReturn = (statusVal==="مرتجع");
+  // مرتجع: مفيش سعر بيتبعت، الوارد بيفضل زي ما هو
+  let p = isReturn ? "" : document.getElementById("modalPriceInput").value.trim();
+  let n=document.getElementById("modalNotesInput").value.trim();
+  if(isReturn && !n){ alert("اكتب سبب الرجوع - مثال: لاغي"); return; }
+  document.getElementById("statusModal").classList.remove("show");pendingModalData=null;await sendUpdateToSheet(rowIndex,statusVal,p,n)
+}
 async function sendUpdateToSheet(rowIndex,statusVal,priceStr,notes){
   let sheet=document.getElementById("sheetSelect").value;let btn=document.getElementById(`btn-${rowIndex}`);if(btn){btn.disabled=true;btn.innerText="⏳..."}
   let url=`${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheet)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${encodeURIComponent(priceStr)}&notes=${encodeURIComponent(notes)}&_t=${Date.now()}`;
   try{let res=await fetch(url,{cache:"no-store"});let json=await res.json();
     if(json.status==="success"){
-      let o=currentOrdersCache.find(x=>x.rowIndex===rowIndex);if(o){if(json.savedPrice!==undefined)o.collectedK=Number(json.savedPrice)||0;o.confirmL=json.savedStatus||statusVal;if(json.savedNotes!==undefined)o.notesN=json.savedNotes;else o.notesN=notes;o.isLocked=isOrderLocked(o)}
+      let o=currentOrdersCache.find(x=>x.rowIndex===rowIndex);
+      if(o){
+        // مرتجع: الوارد بيفضل زي ما هو، مش بيتغير
+        if(statusVal!=="مرتجع" && json.savedPrice!==undefined) o.collectedK=Number(json.savedPrice)||0;
+        o.confirmL=json.savedStatus||statusVal;
+        if(json.savedNotes!==undefined) o.notesN=json.savedNotes; else o.notesN=notes;
+        o.isLocked=isOrderLocked(o)
+      }
       localStorage.setItem("amial_orders_"+currentRep,JSON.stringify(currentOrdersCache));
       if(btn)btn.innerText="✔ تم";toast("تم الحفظ ✅ "+statusVal);vibrate();sendLiveLocation();setTimeout(()=>renderOrders(),300);
     }else{alert(json.message||"خطأ في التحديث");if(btn){btn.disabled=false;btn.innerText="تأكيد"}}
   }catch(e){
     toast("بدون نت - تم الحفظ محلياً 🟡");
-    let o=currentOrdersCache.find(x=>x.rowIndex===rowIndex);if(o){o.collectedK=priceStr?Number(priceStr):o.collectedK;o.confirmL=statusVal;o.notesN=notes;localStorage.setItem("amial_orders_"+currentRep,JSON.stringify(currentOrdersCache))}
+    let o=currentOrdersCache.find(x=>x.rowIndex===rowIndex);if(o){ if(statusVal!=="مرتجع") o.collectedK=priceStr?Number(priceStr):o.collectedK; o.confirmL=statusVal; o.notesN=notes; localStorage.setItem("amial_orders_"+currentRep,JSON.stringify(currentOrdersCache))}
     if(btn){btn.disabled=false;btn.innerText="تأكيد"}renderOrders();
   }
 }
