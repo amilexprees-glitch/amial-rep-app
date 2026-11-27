@@ -10,10 +10,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="تطبيق المناديب"/>
-<title>تطبيق المناديب - AMIAl EXPRESS V6 FINAL</title>
+<title>تطبيق المناديب - AMIAl EXPRESS V7 CLEAN</title>
 <script>
 (function enforceFreshBuild(){
-  const BUILD_TAG="v6-final-20261203";
+  const BUILD_TAG="v7-clean-20261203";
   const LOGO_FILE="./1726248526371.jpeg";
   const url=new URL(window.location.href);
   const currentBuild=url.searchParams.get("_b");
@@ -32,21 +32,20 @@
 *{box-sizing:border-box;font-family:'Segoe UI',Tahoma,sans-serif;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:var(--bg);color:var(--text);padding-bottom:100px}
 .login-screen{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;background:radial-gradient(circle at top,#1e293b,#0b1120 70%)}
-.login-card{background:var(--card);border:1px solid rgba(56,189,248,.3);border-radius:20px;padding:28px 22px;width:100%;max-width:380px;text-align:center;box-shadow:0 15px 35px rgba(0,0,0,.5)}
-.app-logo{width:82px;height:82px;border-radius:20px;overflow:hidden;background:#0b1120;border:2px solid rgba(56,189,248,.45);display:grid;place-items:center;margin:0 auto 14px}
+.login-card{background:var(--card);border:1px solid rgba(56,189,248,.3);border-radius:24px;padding:32px 24px;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,.5)}
+.app-logo{width:90px;height:90px;border-radius:22px;overflow:hidden;background:#0b1120;border:2px solid rgba(56,189,248,.45);display:grid;place-items:center;margin:0 auto 16px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
 .app-logo img{width:100%;height:100%;object-fit:cover;display:block}
-.login-title{font-size:20px;font-weight:800;margin:0 0 6px}
-.login-sub{font-size:13px;color:var(--muted);margin:0 0 16px}
-.auth-input{width:100%;padding:13px 14px;margin-bottom:12px;border-radius:12px;border:1px solid var(--border);background:#0f172a;color:#fff;font-size:15px;font-weight:bold;text-align:center;outline:none}
-.auth-input:focus{border-color:var(--primary)}
-.btn-login{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#38bdf8,#0284c7);color:#00111f;font-size:16px;font-weight:900;cursor:pointer}
+.login-title{font-size:22px;font-weight:900;margin:0 0 6px;letter-spacing:.5px}
+.login-sub{font-size:13px;color:var(--muted);margin:0 0 20px;line-height:1.7}
+.auth-input{width:100%;padding:14px 14px;margin-bottom:12px;border-radius:14px;border:1px solid var(--border);background:#0f172a;color:#fff;font-size:15px;font-weight:bold;text-align:center;outline:none;transition:.2s}
+.auth-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(56,189,248,.15)}
+.btn-login{width:100%;padding:15px;border:none;border-radius:14px;background:linear-gradient(135deg,#38bdf8,#0284c7);color:#00111f;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 8px 20px rgba(56,189,248,.25)}
 .btn-login:disabled{opacity:.6}
 .login-error{color:var(--danger);font-size:13px;font-weight:bold;margin-top:12px;min-height:20px}
-.quick-reps{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:12px}
-.quick-reps button{background:#0f172a;border:1px solid var(--border);color:#fff;padding:7px 12px;border-radius:999px;cursor:pointer;font-size:12px;font-weight:700}
-.live-status{font-size:12px;padding:6px 10px;border-radius:999px;display:inline-block;margin-top:8px;font-weight:700}
+.live-status{font-size:12px;padding:7px 12px;border-radius:999px;display:inline-block;margin-top:10px;font-weight:700}
 .live-status.on{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.4)}
 .live-status.off{background:rgba(148,163,184,.15);color:#94a3b8;border:1px solid var(--border)}
+.login-hint{margin-top:16px;background:rgba(56,189,248,.08);border:1px dashed rgba(56,189,248,.3);border-radius:12px;padding:10px;font-size:12px;color:var(--muted);line-height:1.7}
 #appScreen{display:none}
 .header{background:linear-gradient(135deg,#0f172a,#1e293b);padding:14px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 4px 15px rgba(0,0,0,.4)}
 .header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
@@ -149,19 +148,19 @@ body{margin:0;background:var(--bg);color:var(--text);padding-bottom:100px}
 <div class="login-card">
 <div class="app-logo"><img id="loginLogoImg" src="./1726248526371.jpeg" alt="AMIAl EXPRESS" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:28px;font-weight:900;color:#38bdf8;\'>A</span>';"/></div>
 <h1 class="login-title">AMIAl EXPRESS</h1>
-<p class="login-sub">بوابة المناديب الذكية (V6 FINAL) - سجل الدخول لعرض أوردراتك</p>
-<div class="quick-reps" id="quickReps"></div>
-<input type="text" id="loginRepInput" class="auth-input" placeholder="اسم المندوب (مثال: ماهر26)"/>
-<input type="password" id="loginPinInput" class="auth-input" inputmode="numeric" placeholder="الكود السري (PIN)"/>
+<p class="login-sub">بوابة المناديب الذكية<br>سجل الدخول لعرض أوردراتك</p>
+<input type="text" id="loginRepInput" class="auth-input" placeholder="اسم المندوب" autocomplete="username"/>
+<input type="password" id="loginPinInput" class="auth-input" inputmode="numeric" placeholder="الكود السري (PIN)" autocomplete="current-password"/>
 <button id="loginBtn" class="btn-login" onclick="attemptLogin()">🔐 دخول وعرض الأوردرات</button>
 <div id="loginError" class="login-error"></div>
 <div id="gpsStatus" class="live-status off">📍 GPS: غير مفعل - سيتم التفعيل بعد الدخول</div>
+<div class="login-hint">🔒 دخولك خاص بيك - اكتب اسمك والكود السري اللي استلمته من الإدارة.<br>لو نسيت الكود، تواصل مع الإدارة.</div>
 </div>
 </div>
 
 <div id="appScreen">
 <div class="header">
-<div class="header-top"><div class="brand-wrap"><img id="headerLogoImg" src="./1726248526371.jpeg" alt="Logo" class="header-logo" onerror="this.style.display='none';"/><h1 class="brand-title">AMIAl EXPRESS</h1><span class="version-tag">V6 FINAL</span></div><button class="btn-logout" onclick="logoutRep()">🚪 خروج</button></div>
+<div class="header-top"><div class="brand-wrap"><img id="headerLogoImg" src="./1726248526371.jpeg" alt="Logo" class="header-logo" onerror="this.style.display='none';"/><h1 class="brand-title">AMIAl EXPRESS</h1><span class="version-tag">V7 CLEAN</span></div><button class="btn-logout" onclick="logoutRep()">🚪 خروج</button></div>
 <div class="control-bar">
 <div class="rep-badge" id="activeRepLabel">---</div>
 <select id="sheetSelect" class="sheet-select" onchange="loadAuthenticatedOrders()">
@@ -264,21 +263,13 @@ function vibrate(){try{navigator.vibrate&&navigator.vibrate(60)}catch(e){}}
 function normalizeAr(s){return String(s||"").trim().replace(/\s+/g," ").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").toLowerCase()}
 function isOrderLocked(o){if(o&&o.isLocked===true)return true;let n=normalizeAr(o&&o.confirmL);if(!n)return false;return LOCK_KEYWORDS_NORM.some(k=>n.includes(k))}
 
-// بناء أيام الشهر
 (function(){let sel=document.getElementById("daySelect");for(let d=1;d<=31;d++){let o=document.createElement("option");o.value=d;o.textContent="يوم "+d;sel.appendChild(o)}})();
-// مناديب سريعة
-let quick=["ماهر26","حبيبة","الأخضر","محمد","محمود"];
-let qh="";quick.forEach(n=>qh+=`<button onclick="quickLogin('${n}')">${n}</button>`);document.getElementById("quickReps").innerHTML=qh;
-function quickLogin(n){document.getElementById("loginRepInput").value=n;document.getElementById("loginPinInput").focus()}
 
 // ===== نظام اللايف - إرسال الموقع كل 30 ثانية =====
 function startLiveTracking(){
   if(liveInterval) clearInterval(liveInterval);
-  // 1 - إرسال فوري أول ما يفتح
   sendLiveLocation();
-  // 2 - إرسال كل 30 ثانية
   liveInterval=setInterval(sendLiveLocation, 30000);
-  console.log("✅ تم تشغيل تتبع اللايف - كل 30 ثانية");
   let badge=document.getElementById("liveBadge");
   if(badge){badge.textContent="🟢 متصل باللايف - موقعك بيتبعت كل 30 ثانية";badge.className="live-status on";}
   let gps=document.getElementById("gpsStatus");
@@ -286,7 +277,6 @@ function startLiveTracking(){
 }
 function stopLiveTracking(){
   if(liveInterval){clearInterval(liveInterval);liveInterval=null;}
-  // علم النظام الرئيسي إن المندوب قفل
   try{
     let live=JSON.parse(localStorage.getItem('amial_live_reps')||"[]");
     live=live.filter(r=>r.name!==currentRep);
@@ -297,29 +287,19 @@ function stopLiveTracking(){
 }
 function sendLiveLocation(){
   if(!currentRep) return;
-  if(!navigator.geolocation){
-    // لو مفيش GPS، ابعت بدون موقع بس علم إنه أونلاين
-    saveLiveToStorage(null,null);
-    return;
-  }
+  if(!navigator.geolocation){ saveLiveToStorage(null,null); return; }
   navigator.geolocation.getCurrentPosition(pos=>{
     let lat=pos.coords.latitude, lng=pos.coords.longitude;
     lastLocation={lat,lng};
     saveLiveToStorage(lat,lng);
-    // حاول تبعت للسيرفر كمان (لو السيرفر بيدعم)
     fetch(`${WEB_APP_URL}?action=updateLive&repName=${encodeURIComponent(currentRep)}&lat=${lat}&lng=${lng}&orders=${currentOrdersCache.length}&delivered=${currentOrdersCache.filter(o=>getOrderStatusType(o)==="delivered").length}&_t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
-  },err=>{
-    // لو رفض GPS، ابعت إنه أونلاين بدون موقع
-    saveLiveToStorage(null,null);
-    console.log("GPS مرفوض أو غير متاح:",err.message);
-  },{enableHighAccuracy:true,timeout:8000,maximumAge:10000});
+  },err=>{ saveLiveToStorage(null,null); },{enableHighAccuracy:true,timeout:8000,maximumAge:10000});
 }
 function saveLiveToStorage(lat,lng){
   try{
     let live=JSON.parse(localStorage.getItem('amial_live_reps')||"[]");
     let deliveredCount=currentOrdersCache.filter(o=>getOrderStatusType(o)==="delivered").length;
     let cashCount=currentOrdersCache.reduce((sum,o)=>sum+(parseFloat(o.collectedK)||0),0);
-    // صورة صفحة المندوب - لقطة مصغرة من بياناته
     let previewText=`صفحة ${currentRep} - ${deliveredCount}/${currentOrdersCache.length} تم - ${cashCount.toLocaleString()} ج.م`;
     let obj={
       name:currentRep,
@@ -337,11 +317,9 @@ function saveLiveToStorage(lat,lng){
     let idx=live.findIndex(r=>r.name===currentRep);
     if(idx>=0) live[idx]=obj; else live.push(obj);
     localStorage.setItem('amial_live_reps',JSON.stringify(live));
-    // كمان احفظ نسخة منفصلة للمدير
     localStorage.setItem('amial_live_'+currentRep,JSON.stringify(obj));
-  }catch(e){console.log("خطأ حفظ اللايف",e)}
+  }catch(e){}
 }
-// لما المندوب يقفل التبويب أو يخرج، حاول تبعت إنه قفل
 window.addEventListener('beforeunload',()=>{
   try{
     let live=JSON.parse(localStorage.getItem('amial_live_reps')||"[]");
@@ -349,12 +327,8 @@ window.addEventListener('beforeunload',()=>{
     if(idx>=0){live[idx].status="offline";live[idx].lastSeen=Date.now()-120000;localStorage.setItem('amial_live_reps',JSON.stringify(live));}
   }catch(e){}
 });
-document.addEventListener('visibilitychange',()=>{
-  if(document.hidden){ /* المندوب خفي التطبيق - سيبه أونلاين 2 دقيقة */ }
-  else if(currentRep){ sendLiveLocation(); }
-});
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden && currentRep){ sendLiveLocation(); } });
 
-// ملاحظات خاصة - لا تؤثر على الشيت الأصلي
 function getPrivateKey(row){return `amial_private_${currentRep}_${document.getElementById("sheetSelect").value}_${row}`}
 function getPrivate(row){try{return JSON.parse(localStorage.getItem(getPrivateKey(row))||"{}")}catch(e){return {}}}
 function savePrivateNote(){if(privateModalRow==null&&privateModalRow!==0)return;let data={addr:document.getElementById("privateAddrInput").value.trim(),note:document.getElementById("privateNoteInput").value.trim(),priority:document.getElementById("privatePriority").value,updated:Date.now()};localStorage.setItem(getPrivateKey(privateModalRow),JSON.stringify(data));closePrivateModal();toast("تم حفظ ملاحظتك الخاصة 🔒");renderOrders()}
@@ -415,7 +389,6 @@ async function attemptLogin(){
       currentRep=rep;currentPin=pin;defaultCommRate=data.defaultCommission||25;
       localStorage.setItem("amial_auth_rep",currentRep);localStorage.setItem("amial_auth_pin",currentPin);localStorage.setItem("amial_orders_"+rep,JSON.stringify(data.orders||[]));
       showAppScreen();currentOrdersCache=data.orders||[];renderOrders();toast("أهلاً بيك يا "+rep+" 🎉");vibrate();
-      // تشغيل اللايف بعد الدخول مباشرة
       startLiveTracking();
     } else err.innerText=data.message||"بيانات الدخول غير صحيحة!";
   }catch(e){
@@ -503,7 +476,6 @@ function renderOrders(){
     <div class="drag-handle">↕️ اسحب من هنا لترتيب العناوين يدوياً</div>`;
     list.appendChild(card);
   });
-  // بعد كل رسم، حدّث اللايف عشان صورة الصفحة تتحدث
   sendLiveLocation();
 }
 function moveUp(row){let idx=manualOrder[row]!==undefined?manualOrder[row]:currentOrdersCache.findIndex(x=>x.rowIndex===row);if(idx<=0){toast("ده أول أوردر خلاص");return}let other=currentOrdersCache.find(x=>(manualOrder[x.rowIndex]!==undefined?manualOrder[x.rowIndex]:currentOrdersCache.indexOf(x))===idx-1);if(other){manualOrder[other.rowIndex]=idx;manualOrder[row]=idx-1;localStorage.setItem(`amial_order_${currentRep}_${document.getElementById("sheetSelect").value}`,JSON.stringify(manualOrder));renderOrders();toast("تم النقل فوق ⬆️")}}
