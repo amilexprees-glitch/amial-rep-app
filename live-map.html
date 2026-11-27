@@ -12,11 +12,12 @@ body{margin:0;background:#0b1120;color:#fff}
 .header{padding:14px;background:#0f172a;border-bottom:1px solid #334155;position:sticky;top:0;z-index:1000}
 .header h1{margin:0;font-size:18px;color:#38bdf8}
 .header p{margin:4px 0 0;color:#94a3b8;font-size:12px}
-.controls{padding:10px;display:flex;gap:8px}
+.controls{padding:10px;display:flex;gap:8px;align-items:center}
 .btn{flex:1;padding:11px;border:none;border-radius:10px;font-weight:900;cursor:pointer}
 .btn-refresh{background:#38bdf8;color:#00111f}
-.btn-wa{background:#25D366;color:#002b11}
-#map{height:55vh;width:100%}
+.btn-follow{background:#22c55e;color:#002b11}
+.btn-follow.off{background:#334155;color:#fff}
+#map{height:58vh;width:100%}
 .cards{padding:12px;display:grid;gap:10px}
 .card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:12px}
 .card b{font-size:16px}
@@ -25,40 +26,69 @@ body{margin:0;background:#0b1120;color:#fff}
 .on{background:rgba(34,197,94,.2);color:#4ade80;border:1px solid #22c55e}
 .off{background:rgba(148,163,184,.2);color:#cbd5e1}
 .link{color:#38bdf8;font-size:12px}
+.live-dot{display:inline-block;width:9px;height:9px;background:#22c55e;border-radius:50%;margin-left:5px;animation:pulse 1s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.6)}100%{box-shadow:0 0 0 8px rgba(34,197,94,0)}}
 </style>
 </head>
 <body>
 <div class="header">
-<h1>🗺️ خريطة المناديب Live</h1>
+<h1>🗺️ خريطة المناديب Live <span class="live-dot"></span></h1>
 <p id="lastUpdate">جاري التحميل...</p>
 </div>
 <div class="controls">
 <button class="btn btn-refresh" onclick="loadReps()">🔄 تحديث الآن</button>
-<button class="btn btn-wa" onclick="loadReps()">📍 تحديث كل 30 ثانية</button>
+<button id="followBtn" class="btn btn-follow" onclick="toggleFollow()">📍 تتبع الكل: شغال</button>
 </div>
 <div id="map"></div>
 <div class="cards" id="cards"></div>
 
 <script>
+// ⚠️ حط هنا نفس لينك Deploy اللي في rep-app.html بالظبط
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzq9-qZXfXRoakha9eulyXYJQ16Ws-cu5RzoLlFmj3DFdxKvd_k9O70Pa_2tepLQX9nxw/exec";
 const SHEET = "1/11/2026";
 
 let map = L.map('map').setView([30.7865, 31.0004], 8);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
-let markers = [];
+
+let markers = {}; // repName -> marker
+let trails = {}; // repName -> polyline
+let trailPoints = {}; // repName -> [[lat,lng], ...]
+let followMode = true;
+let firstLoad = true;
+
+function toggleFollow(){
+  followMode = !followMode;
+  let b = document.getElementById('followBtn');
+  b.textContent = followMode ? "📍 تتبع الكل: شغال" : "📍 تتبع الكل: واقف";
+  b.classList.toggle('off', !followMode);
+}
+
+function animateMarker(marker, newLatLng){
+  // حركة ناعمة من المكان القديم للجديد
+  let old = marker.getLatLng();
+  let steps = 20;
+  let i = 0;
+  let timer = setInterval(()=>{
+    i++;
+    let lat = old.lat + (newLatLng.lat - old.lat) * (i/steps);
+    let lng = old.lng + (newLatLng.lng - old.lng) * (i/steps);
+    marker.setLatLng([lat, lng]);
+    if(i>=steps) clearInterval(timer);
+  }, 30);
+}
 
 async function loadReps(){
-  document.getElementById('lastUpdate').textContent = "⏳ جاري التحديث...";
   try{
     let res = await fetch(`${WEB_APP_URL}?action=getRepsOverview&sheetName=${encodeURIComponent(SHEET)}&_t=${Date.now()}`);
     let data = await res.json();
-    markers.forEach(m=>map.removeLayer(m)); markers=[];
     let cards = document.getElementById('cards');
     cards.innerHTML = "";
     if(!data.reps || !data.reps.length){
       cards.innerHTML = "<div style='text-align:center;color:#94a3b8;padding:20px'>لسه مفيش مناديب بعتوا موقعهم<br>خلي مندوب يفتح الأبليكيشن ويسمح للموقع</div>";
+      document.getElementById('lastUpdate').textContent = "⏳ مستني أول مندوب...";
       return;
     }
+    let bounds = [];
     data.reps.forEach(r=>{
       let hasLoc = r.lat && r.lng;
       let isOnline = hasLoc && r.consentStatus==="granted";
@@ -67,27 +97,51 @@ async function loadReps(){
       card.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center">
           <b>${r.repName}</b>
-          <span class="badge ${isOnline?'on':'off'}">${isOnline?'🟢 متصل الآن':'⚫ غير متصل'}</span>
+          <span class="badge ${isOnline?'on':'off'}">${isOnline?'🟢 متصل الآن - بيتحرك':'⚫ غير متصل'}</span>
         </div>
         <div class="meta">📦 ${r.deliveredOrders}/${r.totalOrders} تم | آخر ظهور: ${r.lastSeen||'غير محدد'}</div>
-        <div class="meta">📍 ${hasLoc ? r.lat+', '+r.lng : 'مفيش موقع متبعت'}</div>
+        <div class="meta">📍 ${hasLoc ? parseFloat(r.lat).toFixed(5)+', '+parseFloat(r.lng).toFixed(5) : 'مفيش موقع متبعت'}</div>
         ${hasLoc ? `<a class="link" target="_blank" href="https://maps.google.com/?q=${r.lat},${r.lng}">📍 افتح مكانه على خرائط جوجل ↗</a>` : ''}
       `;
       cards.appendChild(card);
+
       if(hasLoc){
-        let m = L.marker([parseFloat(r.lat), parseFloat(r.lng)]).addTo(map);
-        m.bindPopup(`<b>${r.repName}</b><br>${r.deliveredOrders}/${r.totalOrders} تم<br>${r.lastSeen||''}`);
-        markers.push(m);
+        let lat = parseFloat(r.lat), lng = parseFloat(r.lng);
+        bounds.push([lat, lng]);
+        // مسار المندوب
+        if(!trailPoints[r.repName]) trailPoints[r.repName] = [];
+        let last = trailPoints[r.repName][trailPoints[r.repName].length-1];
+        // ضيف نقطة جديدة بس لو اتحرك أكتر من 20 متر
+        if(!last || Math.abs(last[0]-lat)>0.0002 || Math.abs(last[1]-lng)>0.0002){
+          trailPoints[r.repName].push([lat, lng]);
+          if(trailPoints[r.repName].length > 100) trailPoints[r.repName].shift();
+        }
+        if(trails[r.repName]) map.removeLayer(trails[r.repName]);
+        trails[r.repName] = L.polyline(trailPoints[r.repName], {color:'#38bdf8', weight:3, opacity:0.7, dashArray:'6,6'}).addTo(map);
+
+        if(markers[r.repName]){
+          // موجود قبل كده - حركه بسلاسة
+          animateMarker(markers[r.repName], L.latLng(lat, lng));
+          markers[r.repName].setPopupContent(`<b>${r.repName}</b><br>${r.deliveredOrders}/${r.totalOrders} تم<br>${r.lastSeen||''}<br>📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+        } else {
+          // أول مرة يظهر
+          let m = L.marker([lat, lng]).addTo(map);
+          m.bindPopup(`<b>${r.repName}</b><br>${r.deliveredOrders}/${r.totalOrders} تم<br>${r.lastSeen||''}`);
+          markers[r.repName] = m;
+        }
       }
     });
-    if(markers.length) map.fitBounds(markers.map(m=>m.getLatLng()), {padding:[30,30]});
-    document.getElementById('lastUpdate').textContent = "✅ آخر تحديث: " + new Date().toLocaleTimeString('ar-EG') + " | عدد المناديب: " + data.reps.length + " | متصلين: " + data.activeLocationCount;
+    if(bounds.length && (firstLoad || followMode)){
+      if(firstLoad){ map.fitBounds(bounds, {padding:[40,40]}); firstLoad = false; }
+      else { map.fitBounds(bounds, {padding:[40,40]}); }
+    }
+    document.getElementById('lastUpdate').textContent = "🟢 لايف - آخر تحديث: " + new Date().toLocaleTimeString('ar-EG') + " | عدد المناديب: " + data.reps.length + " | متصلين: " + data.activeLocationCount;
   }catch(e){
-    document.getElementById('lastUpdate').textContent = "❌ مش قادر أوصل للشيت - اتأكد من النت";
+    document.getElementById('lastUpdate').textContent = "❌ مش قادر أوصل للشيت - هيحاول تاني لوحده";
   }
 }
 loadReps();
-setInterval(loadReps, 30000);
+setInterval(loadReps, 5000); // تحديث كل 5 ثواني لوحده
 </script>
 </body>
 </html>
