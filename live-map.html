@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>خريطة المناديب Live - AMIAl EXPRESS</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*{box-sizing:border-box;font-family:'Segoe UI',Tahoma,sans-serif}
+body{margin:0;background:#0b1120;color:#fff}
+.header{padding:14px;background:#0f172a;border-bottom:1px solid #334155;position:sticky;top:0;z-index:1000}
+.header h1{margin:0;font-size:18px;color:#38bdf8}
+.header p{margin:4px 0 0;color:#94a3b8;font-size:12px}
+.controls{padding:10px;display:flex;gap:8px}
+.btn{flex:1;padding:11px;border:none;border-radius:10px;font-weight:900;cursor:pointer}
+.btn-refresh{background:#38bdf8;color:#00111f}
+.btn-wa{background:#25D366;color:#002b11}
+#map{height:55vh;width:100%}
+.cards{padding:12px;display:grid;gap:10px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:12px}
+.card b{font-size:16px}
+.card .meta{color:#94a3b8;font-size:12px;margin:4px 0}
+.badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800}
+.on{background:rgba(34,197,94,.2);color:#4ade80;border:1px solid #22c55e}
+.off{background:rgba(148,163,184,.2);color:#cbd5e1}
+.link{color:#38bdf8;font-size:12px}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>🗺️ خريطة المناديب Live</h1>
+<p id="lastUpdate">جاري التحميل...</p>
+</div>
+<div class="controls">
+<button class="btn btn-refresh" onclick="loadReps()">🔄 تحديث الآن</button>
+<button class="btn btn-wa" onclick="loadReps()">📍 تحديث كل 30 ثانية</button>
+</div>
+<div id="map"></div>
+<div class="cards" id="cards"></div>
+
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwZBGcTO5EWaSKcIFf8SUPcBZ47yjYgMd11FTAw_MkGKAsEdSMUnGote_Cnts5jvY0fuQ/exec";
+const SHEET = "1/11/2026";
+
+let map = L.map('map').setView([30.7865, 31.0004], 8);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+let markers = [];
+
+async function loadReps(){
+  document.getElementById('lastUpdate').textContent = "⏳ جاري التحديث...";
+  try{
+    let res = await fetch(`${WEB_APP_URL}?action=getRepsOverview&sheetName=${encodeURIComponent(SHEET)}&_t=${Date.now()}`);
+    let data = await res.json();
+    markers.forEach(m=>map.removeLayer(m)); markers=[];
+    let cards = document.getElementById('cards');
+    cards.innerHTML = "";
+    if(!data.reps || !data.reps.length){
+      cards.innerHTML = "<div style='text-align:center;color:#94a3b8;padding:20px'>لسه مفيش مناديب بعتوا موقعهم<br>خلي مندوب يفتح الأبليكيشن ويسمح للموقع</div>";
+      return;
+    }
+    data.reps.forEach(r=>{
+      let hasLoc = r.lat && r.lng;
+      let isOnline = hasLoc && r.consentStatus==="granted";
+      let card = document.createElement('div');
+      card.className='card';
+      card.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <b>${r.repName}</b>
+          <span class="badge ${isOnline?'on':'off'}">${isOnline?'🟢 متصل الآن':'⚫ غير متصل'}</span>
+        </div>
+        <div class="meta">📦 ${r.deliveredOrders}/${r.totalOrders} تم | آخر ظهور: ${r.lastSeen||'غير محدد'}</div>
+        <div class="meta">📍 ${hasLoc ? r.lat+', '+r.lng : 'مفيش موقع متبعت'}</div>
+        ${hasLoc ? `<a class="link" target="_blank" href="https://maps.google.com/?q=${r.lat},${r.lng}">📍 افتح مكانه على خرائط جوجل ↗</a>` : ''}
+      `;
+      cards.appendChild(card);
+      if(hasLoc){
+        let m = L.marker([parseFloat(r.lat), parseFloat(r.lng)]).addTo(map);
+        m.bindPopup(`<b>${r.repName}</b><br>${r.deliveredOrders}/${r.totalOrders} تم<br>${r.lastSeen||''}`);
+        markers.push(m);
+      }
+    });
+    if(markers.length) map.fitBounds(markers.map(m=>m.getLatLng()), {padding:[30,30]});
+    document.getElementById('lastUpdate').textContent = "✅ آخر تحديث: " + new Date().toLocaleTimeString('ar-EG') + " | عدد المناديب: " + data.reps.length + " | متصلين: " + data.activeLocationCount;
+  }catch(e){
+    document.getElementById('lastUpdate').textContent = "❌ مش قادر أوصل للشيت - اتأكد من النت";
+  }
+}
+loadReps();
+setInterval(loadReps, 30000);
+</script>
+</body>
+</html>
