@@ -1,883 +1,535 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <meta name="theme-color" content="#0b1120" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="تطبيق المناديب" />
-  <title>تطبيق المناديب - AMIAl EXPRESS</title>
-
-  <script>
-    (function enforceFreshBuild() {
-      const BUILD_TAG = "v3.6-20261203";
-      const LOGO_FILE = "./1726248526371.jpeg";
-      const url = new URL(window.location.href);
-      const currentBuild = url.searchParams.get("_b");
-
-      if (currentBuild !== BUILD_TAG) {
-        url.searchParams.set("_b", BUILD_TAG);
-        url.searchParams.set("_t", Date.now().toString());
-        window.location.replace(url.toString());
-        return;
-      }
-
-      const iconHref = LOGO_FILE + "?v=" + encodeURIComponent(BUILD_TAG);
-
-      const favIcon = document.createElement("link");
-      favIcon.rel = "icon";
-      favIcon.type = "image/jpeg";
-      favIcon.href = iconHref;
-      document.head.appendChild(favIcon);
-
-      const appleIcon = document.createElement("link");
-      appleIcon.rel = "apple-touch-icon";
-      appleIcon.href = iconHref;
-      document.head.appendChild(appleIcon);
-
-      const manifestLink = document.createElement("link");
-      manifestLink.rel = "manifest";
-      const manifestData = {
-        name: "تطبيق المناديب - AMIAl EXPRESS",
-        short_name: "تطبيق المناديب",
-        start_url: "./rep-app.html?_b=" + encodeURIComponent(BUILD_TAG),
-        scope: "./",
-        display: "standalone",
-        background_color: "#0b1120",
-        theme_color: "#0b1120",
-        icons: [
-          {
-            src: iconHref,
-            sizes: "192x192",
-            type: "image/jpeg",
-            purpose: "any maskable"
-          },
-          {
-            src: iconHref,
-            sizes: "512x512",
-            type: "image/jpeg",
-            purpose: "any maskable"
-          }
-        ]
-      };
-      const blob = new Blob([JSON.stringify(manifestData)], { type: "application/json" });
-      manifestLink.href = URL.createObjectURL(blob);
-      document.head.appendChild(manifestLink);
-
-      window.__APP_ICON_URL__ = iconHref;
-    })();
-  </script>
-
-  <style>
-    :root {
-      --bg: #0b1120;
-      --card: #1e293b;
-      --border: rgba(148, 163, 184, 0.2);
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --primary: #38bdf8;
-      --success: #22c55e;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --whatsapp: #25D366;
-    }
-    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
-    body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 40px; }
-
-    .login-screen {
-      min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px;
-      background: radial-gradient(circle at top, #1e293b, #0b1120 70%);
-    }
-    .login-card {
-      background: var(--card); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px;
-      padding: 28px 22px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-    }
-    .app-logo {
-      width: 82px; height: 82px; border-radius: 20px; overflow: hidden;
-      background: #0b1120; border: 2px solid rgba(56, 189, 248, 0.45);
-      display: grid; place-items: center; margin: 0 auto 14px;
-    }
-    .app-logo img {
-      width: 100%; height: 100%; object-fit: contain; display: block;
-    }
-    .login-title { font-size: 20px; font-weight: 800; margin: 0 0 6px; color: #fff; }
-    .login-sub { font-size: 13px; color: var(--muted); margin: 0 0 20px; }
-    .auth-input {
-      width: 100%; padding: 13px 14px; margin-bottom: 12px; border-radius: 12px;
-      border: 1px solid var(--border); background: #0f172a; color: #fff; font-size: 15px; font-weight: bold; text-align: center;
-    }
-    .auth-input:focus { outline: none; border-color: var(--primary); }
-    .btn-login {
-      width: 100%; padding: 14px; border: none; border-radius: 12px;
-      background: linear-gradient(135deg, #38bdf8, #0284c7); color: #00111f; font-size: 16px; font-weight: 900; cursor: pointer;
-    }
-    .login-error { color: var(--danger); font-size: 13px; font-weight: bold; margin-top: 12px; min-height: 20px; }
-
-    #appScreen { display: none; }
-    .header {
-      background: linear-gradient(135deg, #0f172a, #1e293b); padding: 14px 16px;
-      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-    }
-    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .brand-wrap { display: flex; align-items: center; gap: 8px; }
-    .header-logo {
-      width: 30px; height: 30px; border-radius: 8px; object-fit: contain;
-      background: #0b1120; border: 1px solid rgba(56, 189, 248, 0.4);
-    }
-    .brand-title { font-size: 16px; font-weight: 800; color: var(--primary); margin: 0; }
-    .version-tag {
-      background: rgba(56, 189, 248, 0.16); color: var(--primary); border: 1px solid rgba(56, 189, 248, 0.35);
-      padding: 2px 7px; border-radius: 999px; font-size: 11px; font-weight: 800;
-    }
-    .btn-logout {
-      background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3);
-      padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer;
-    }
-
-    .control-bar { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 6px; align-items: center; }
-    .rep-badge {
-      background: #0f172a; border: 1px solid var(--primary); padding: 9px 8px; border-radius: 10px;
-      font-size: 13px; font-weight: 800; color: #fff; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .sheet-select, .day-select {
-      padding: 9px 6px; border-radius: 10px; border: 1px solid var(--border);
-      background: #0f172a; color: var(--primary); font-size: 12px; font-weight: bold; text-align: center;
-    }
-    .btn-refresh {
-      background: var(--primary); color: #00111f; border: none; padding: 9px 12px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 12px;
-    }
-
-    .finance-panel {
-      margin: 12px 14px; background: linear-gradient(145deg, #162032, #1e293b);
-      border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px; padding: 14px;
-    }
-    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
-    .money-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
-    .sum-card {
-      background: rgba(15, 23, 42, 0.75); padding: 10px 6px; border-radius: 10px; text-align: center; border: 1px solid var(--border);
-    }
-    .sum-num { font-size: 15px; font-weight: 900; display: block; margin-bottom: 3px; }
-    .sum-lbl { font-size: 11px; color: var(--muted); }
-
-    .filter-tabs { display: flex; gap: 6px; padding: 0 14px 10px; overflow-x: auto; }
-    .f-tab {
-      flex: 1; padding: 8px 4px; border-radius: 10px; border: 1px solid var(--border);
-      background: var(--card); color: var(--muted); font-size: 11px; font-weight: bold; text-align: center; cursor: pointer; white-space: nowrap;
-    }
-    .f-tab.active { background: var(--primary); color: #00111f; border-color: var(--primary); }
-
-    .search-box-wrap {
-      padding: 0 14px 12px;
-      position: relative;
-    }
-    .search-input {
-      width: 100%;
-      padding: 10px 38px 10px 36px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      font-size: 13px;
-      font-weight: 600;
-    }
-    .search-input::placeholder { color: var(--muted); font-weight: 400; }
-    .search-input:focus { outline: none; border-color: var(--primary); }
-    .search-icon {
-      position: absolute;
-      right: 25px;
-      top: 50%;
-      transform: translateY(calc(-50% - 6px));
-      font-size: 14px;
-      pointer-events: none;
-      opacity: 0.85;
-    }
-    .btn-clear-search {
-      display: none;
-      position: absolute;
-      left: 22px;
-      top: 50%;
-      transform: translateY(calc(-50% - 6px));
-      background: rgba(148, 163, 184, 0.2);
-      color: var(--text);
-      border: none;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      font-size: 11px;
-      font-weight: 900;
-      cursor: pointer;
-      line-height: 22px;
-      text-align: center;
-      padding: 0;
-    }
-    .btn-clear-search.visible { display: inline-block; }
-
-    .orders-container { padding: 0 14px; display: grid; gap: 14px; }
-    .order-card {
-      background: var(--card); border-radius: 16px; padding: 15px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-    }
-    .order-card.delivered { border-right: 5px solid var(--success); }
-    .order-card.partial { border-right: 5px solid #0ea5e9; }
-    .order-card.returned { border-right: 5px solid var(--danger); opacity: 0.9; }
-    .order-card.pending { border-right: 5px solid var(--warning); }
-    .order-card.locked { border-right: 5px solid #94a3b8; opacity: 0.88; }
-
-    .client-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
-    .client-name { font-size: 16px; font-weight: 800; color: #fff; margin: 0; }
-    .badges-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-    .price-badge {
-      background: rgba(56, 189, 248, 0.15); color: var(--primary); padding: 4px 11px;
-      border-radius: 999px; font-weight: 900; font-size: 14px; border: 1px solid rgba(56, 189, 248, 0.3);
-    }
-    .lock-badge {
-      background: rgba(148, 163, 184, 0.18); color: #e2e8f0; padding: 4px 9px;
-      border-radius: 999px; font-weight: 800; font-size: 11px; border: 1px solid rgba(148, 163, 184, 0.35);
-    }
-
-    .info-line { font-size: 13px; color: #cbd5e1; margin: 5px 0; line-height: 1.5; }
-    .info-line span { color: var(--muted); }
-
-    .contact-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
-    .c-btn {
-      display: flex; align-items: center; justify-content: center; gap: 5px;
-      padding: 9px 6px; border-radius: 10px; text-decoration: none; font-size: 13px; font-weight: bold; color: #fff;
-    }
-    .btn-call { background: #2563eb; }
-    .btn-wa { background: var(--whatsapp); color: #002b11; }
-    .btn-sms { background: #475569; }
-
-    .status-controls {
-      display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
-    }
-    .status-select {
-      flex: 1; padding: 10px; border-radius: 10px; background: #0f172a;
-      color: #fff; border: 1px solid var(--primary); font-size: 13px; font-weight: bold;
-    }
-    .status-select:disabled { opacity: 0.6; cursor: not-allowed; border-color: var(--border); }
-    .btn-save-status {
-      background: var(--success); color: #002b11; border: none; padding: 0 18px; border-radius: 10px; font-weight: 900; font-size: 14px; cursor: pointer;
-    }
-    .btn-save-status:disabled { background: #475569; color: #cbd5e1; cursor: not-allowed; }
-    .loader { text-align: center; padding: 30px; color: var(--primary); font-weight: bold; display: none; }
-
-    .modal-backdrop {
-      display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.78);
-      backdrop-filter: blur(3px); z-index: 999; justify-content: center; align-items: center; padding: 16px;
-    }
-    .modal-backdrop.show { display: flex; }
-    .modal-box {
-      background: #1e293b; border: 1px solid rgba(56, 189, 248, 0.45);
-      border-radius: 18px; width: 100%; max-width: 360px; padding: 20px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.65);
-    }
-    .modal-title { margin: 0 0 4px; font-size: 17px; font-weight: 900; color: var(--primary); }
-    .modal-sub { margin: 0 0 14px; font-size: 12px; color: var(--muted); }
-    .modal-label { display: block; font-size: 12px; font-weight: 800; color: #e2e8f0; margin-bottom: 5px; }
-    .modal-input {
-      width: 100%; padding: 10px 12px; margin-bottom: 12px; border-radius: 10px;
-      border: 1px solid var(--border); background: #0f172a; color: #fff; font-size: 14px; font-weight: bold;
-    }
-    .modal-input:focus { outline: none; border-color: var(--primary); }
-    .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
-    .btn-modal-save {
-      padding: 11px; border: none; border-radius: 10px; background: var(--success);
-      color: #002b11; font-weight: 900; font-size: 14px; cursor: pointer;
-    }
-    .btn-modal-cancel {
-      padding: 11px; border: 1px solid var(--border); border-radius: 10px; background: #0f172a;
-      color: #cbd5e1; font-weight: 800; font-size: 13px; cursor: pointer;
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<meta name="theme-color" content="#0b1120"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="تطبيق المناديب"/>
+<title>تطبيق المناديب - AMIAl EXPRESS V6 FINAL</title>
+<script>
+(function enforceFreshBuild(){
+  const BUILD_TAG="v6-final-20261203";
+  const LOGO_FILE="./1726248526371.jpeg";
+  const url=new URL(window.location.href);
+  const currentBuild=url.searchParams.get("_b");
+  if(currentBuild!==BUILD_TAG){url.searchParams.set("_b",BUILD_TAG);url.searchParams.set("_t",Date.now().toString());window.location.replace(url.toString());return;}
+  const iconHref=LOGO_FILE+"?v="+encodeURIComponent(BUILD_TAG);
+  const fav=document.createElement("link");fav.rel="icon";fav.type="image/jpeg";fav.href=iconHref;document.head.appendChild(fav);
+  const apple=document.createElement("link");apple.rel="apple-touch-icon";apple.href=iconHref;document.head.appendChild(apple);
+  const manifestLink=document.createElement("link");manifestLink.rel="manifest";
+  const manifestData={name:"تطبيق المناديب - AMIAl EXPRESS",short_name:"تطبيق المناديب",start_url:"./rep-app.html?_b="+encodeURIComponent(BUILD_TAG),scope:"./",display:"standalone",background_color:"#0b1120",theme_color:"#0b1120",icons:[{src:iconHref,sizes:"192x192",type:"image/jpeg",purpose:"any maskable"},{src:iconHref,sizes:"512x512",type:"image/jpeg",purpose:"any maskable"}]};
+  const blob=new Blob([JSON.stringify(manifestData)],{type:"application/json"});manifestLink.href=URL.createObjectURL(blob);document.head.appendChild(manifestLink);
+  window.__APP_ICON_URL__=iconHref;
+})();
+</script>
+<style>
+:root{--bg:#0b1120;--card:#1e293b;--border:rgba(148,163,184,.2);--text:#f8fafc;--muted:#94a3b8;--primary:#38bdf8;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444;--whatsapp:#25D366}
+*{box-sizing:border-box;font-family:'Segoe UI',Tahoma,sans-serif;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);padding-bottom:100px}
+.login-screen{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;background:radial-gradient(circle at top,#1e293b,#0b1120 70%)}
+.login-card{background:var(--card);border:1px solid rgba(56,189,248,.3);border-radius:20px;padding:28px 22px;width:100%;max-width:380px;text-align:center;box-shadow:0 15px 35px rgba(0,0,0,.5)}
+.app-logo{width:82px;height:82px;border-radius:20px;overflow:hidden;background:#0b1120;border:2px solid rgba(56,189,248,.45);display:grid;place-items:center;margin:0 auto 14px}
+.app-logo img{width:100%;height:100%;object-fit:cover;display:block}
+.login-title{font-size:20px;font-weight:800;margin:0 0 6px}
+.login-sub{font-size:13px;color:var(--muted);margin:0 0 16px}
+.auth-input{width:100%;padding:13px 14px;margin-bottom:12px;border-radius:12px;border:1px solid var(--border);background:#0f172a;color:#fff;font-size:15px;font-weight:bold;text-align:center;outline:none}
+.auth-input:focus{border-color:var(--primary)}
+.btn-login{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#38bdf8,#0284c7);color:#00111f;font-size:16px;font-weight:900;cursor:pointer}
+.btn-login:disabled{opacity:.6}
+.login-error{color:var(--danger);font-size:13px;font-weight:bold;margin-top:12px;min-height:20px}
+.quick-reps{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:12px}
+.quick-reps button{background:#0f172a;border:1px solid var(--border);color:#fff;padding:7px 12px;border-radius:999px;cursor:pointer;font-size:12px;font-weight:700}
+.live-status{font-size:12px;padding:6px 10px;border-radius:999px;display:inline-block;margin-top:8px;font-weight:700}
+.live-status.on{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.4)}
+.live-status.off{background:rgba(148,163,184,.15);color:#94a3b8;border:1px solid var(--border)}
+#appScreen{display:none}
+.header{background:linear-gradient(135deg,#0f172a,#1e293b);padding:14px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 4px 15px rgba(0,0,0,.4)}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.brand-wrap{display:flex;align-items:center;gap:8px}
+.header-logo{width:30px;height:30px;border-radius:8px;object-fit:cover;background:#0b1120;border:1px solid rgba(56,189,248,.4)}
+.brand-title{font-size:16px;font-weight:800;color:var(--primary);margin:0}
+.version-tag{background:rgba(56,189,248,.16);color:var(--primary);border:1px solid rgba(56,189,248,.35);padding:2px 7px;border-radius:999px;font-size:11px;font-weight:800}
+.btn-logout{background:rgba(239,68,68,.15);color:var(--danger);border:1px solid rgba(239,68,68,.3);padding:5px 10px;border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer}
+.control-bar{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;align-items:center}
+.rep-badge{background:#0f172a;border:1px solid var(--primary);padding:9px 8px;border-radius:10px;font-size:13px;font-weight:800;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sheet-select,.day-select{padding:9px 6px;border-radius:10px;border:1px solid var(--border);background:#0f172a;color:var(--primary);font-size:12px;font-weight:bold;text-align:center}
+.btn-refresh{background:var(--primary);color:#00111f;border:none;padding:9px 12px;border-radius:10px;font-weight:800;cursor:pointer;font-size:12px}
+.finance-panel{margin:12px 14px;background:linear-gradient(145deg,#162032,#1e293b);border:1px solid rgba(56,189,248,.3);border-radius:16px;padding:14px}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.money-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:10px;border-top:1px solid var(--border)}
+.sum-card{background:rgba(15,23,42,.75);padding:10px 6px;border-radius:10px;text-align:center;border:1px solid var(--border)}
+.sum-num{font-size:15px;font-weight:900;display:block;margin-bottom:3px}
+.sum-lbl{font-size:11px;color:var(--muted)}
+.progress{height:8px;background:#0f172a;border-radius:999px;overflow:hidden;margin-top:10px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,#38bdf8,#22c55e);transition:.4s}
+.progress-txt{font-size:11px;color:var(--muted);text-align:center;margin-top:4px}
+.sort-bar{margin:0 14px 10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.sort-btn{padding:10px 6px;border-radius:11px;border:1px solid var(--border);background:var(--card);color:#fff;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px}
+.sort-btn.active{background:var(--primary);color:#00111f;border-color:var(--primary)}
+.sort-btn.ai{background:linear-gradient(135deg,#8b5cf6,#ec4899);border:none;color:#fff}
+.color-legend{margin:0 14px 10px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.legend-item{display:flex;gap:4px;align-items:center;font-size:11px;color:var(--muted);background:#111827;padding:4px 8px;border-radius:999px;border:1px solid var(--border)}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.filter-tabs{display:flex;gap:6px;padding:0 14px 10px;overflow-x:auto}
+.f-tab{flex:1;padding:8px 4px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:11px;font-weight:bold;text-align:center;cursor:pointer;white-space:nowrap}
+.f-tab.active{background:var(--primary);color:#00111f;border-color:var(--primary)}
+.search-box-wrap{padding:0 14px 12px;position:relative}
+.search-input{width:100%;padding:10px 70px 10px 36px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;font-weight:600;outline:none}
+.search-icon{position:absolute;right:25px;top:50%;transform:translateY(calc(-50% - 6px));font-size:14px;pointer-events:none}
+.btn-mic{position:absolute;left:48px;top:50%;transform:translateY(calc(-50% - 6px));background:#0f172a;border:1px solid var(--border);border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:14px}
+.btn-clear-search{display:none;position:absolute;left:22px;top:50%;transform:translateY(calc(-50% - 6px));background:rgba(148,163,184,.2);color:var(--text);border:none;border-radius:50%;width:22px;height:22px;font-size:11px;font-weight:900;cursor:pointer}
+.btn-clear-search.visible{display:inline-block}
+.orders-container{padding:0 14px;display:grid;gap:14px}
+.order-card{background:var(--card);border-radius:16px;padding:15px;border:1px solid var(--border);box-shadow:0 4px 12px rgba(0,0,0,.25);position:relative;animation:fade .25s}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.order-card.pending{background:linear-gradient(135deg,#1e293b 85%,rgba(245,158,11,.18));border-right:6px solid var(--warning);border-top:2px solid rgba(245,158,11,.4)}
+.order-card.delivered{background:linear-gradient(135deg,#1e293b 85%,rgba(34,197,94,.18));border-right:6px solid var(--success);border-top:2px solid rgba(34,197,94,.4)}
+.order-card.partial{background:linear-gradient(135deg,#1e293b 85%,rgba(14,165,233,.20));border-right:6px solid #0ea5e9;border-top:2px solid rgba(14,165,233,.4)}
+.order-card.returned{background:linear-gradient(135deg,#1e293b 85%,rgba(239,68,68,.20));border-right:6px solid var(--danger);border-top:2px solid rgba(239,68,68,.4);opacity:.95}
+.order-card.locked{border-right:6px solid #94a3b8;opacity:.88}
+.client-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.client-name{font-size:16px;font-weight:800;margin:0}
+.order-num{font-size:11px;color:var(--muted);font-weight:700}
+.status-pill{font-size:11px;font-weight:900;padding:4px 9px;border-radius:999px;display:inline-block;margin-top:4px}
+.status-pill.pending{background:rgba(245,158,11,.20);color:#fbbf24;border:1px solid rgba(245,158,11,.4)}
+.status-pill.delivered{background:rgba(34,197,94,.20);color:#4ade80;border:1px solid rgba(34,197,94,.4)}
+.status-pill.partial{background:rgba(14,165,233,.20);color:#38bdf8;border:1px solid rgba(14,165,233,.4)}
+.status-pill.returned{background:rgba(239,68,68,.20);color:#f87171;border:1px solid rgba(239,68,68,.4)}
+.badges-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.price-badge{background:rgba(56,189,248,.15);color:var(--primary);padding:4px 11px;border-radius:999px;font-weight:900;font-size:14px;border:1px solid rgba(56,189,248,.3)}
+.lock-badge{background:rgba(148,163,184,.18);color:#e2e8f0;padding:4px 9px;border-radius:999px;font-weight:800;font-size:11px;border:1px solid rgba(148,163,184,.35)}
+.dots-btn{background:#0f172a;border:1px solid var(--border);color:#fff;width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:18px;font-weight:900;line-height:1;display:grid;place-items:center}
+.dots-menu{display:none;position:absolute;top:48px;left:12px;background:#0f172a;border:1px solid var(--primary);border-radius:12px;z-index:50;min-width:210px;overflow:hidden;box-shadow:0 15px 30px rgba(0,0,0,.6)}
+.dots-menu.show{display:block}
+.dots-menu button{display:block;width:100%;text-align:right;padding:12px 14px;background:transparent;border:none;border-bottom:1px solid var(--border);color:#fff;font-size:13px;font-weight:700;cursor:pointer}
+.dots-menu button:last-child{border:none}
+.info-line{font-size:13px;color:#cbd5e1;margin:5px 0;line-height:1.5}
+.info-line span{color:var(--muted)}
+.private-note{background:rgba(139,92,246,.15);border:1px dashed #8b5cf6;border-radius:10px;padding:9px 10px;font-size:12.5px;margin:8px 0;line-height:1.6}
+.private-note b{color:#c4b5fd}
+.private-addr{background:rgba(245,158,11,.12);border:1px dashed #f59e0b;border-radius:10px;padding:9px 10px;font-size:12.5px;margin:8px 0;line-height:1.6}
+.private-addr b{color:#fbbf24}
+.contact-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0}
+.c-btn{display:flex;align-items:center;justify-content:center;gap:4px;padding:9px 4px;border-radius:10px;text-decoration:none;font-size:12px;font-weight:700;color:#fff;border:none;cursor:pointer}
+.btn-call{background:#2563eb}.btn-wa{background:var(--whatsapp);color:#002b11}.btn-sms{background:#475569}.btn-map{background:#f59e0b;color:#00111f}
+.status-controls{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.status-select{flex:1;padding:10px;border-radius:10px;background:#0f172a;color:#fff;border:1px solid var(--primary);font-size:13px;font-weight:bold}
+.status-select:disabled{opacity:.6;cursor:not-allowed}
+.btn-save-status{background:var(--success);color:#002b11;border:none;padding:0 18px;border-radius:10px;font-weight:900;font-size:14px;cursor:pointer}
+.btn-save-status:disabled{background:#475569;color:#cbd5e1}
+.drag-handle{background:#0f172a;border:1px dashed var(--border);color:var(--muted);padding:7px;border-radius:8px;text-align:center;font-size:11px;font-weight:700;cursor:grab;margin-top:10px;user-select:none}
+.loader{text-align:center;padding:30px;color:var(--primary);font-weight:bold;display:none}
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(2,6,23,.78);backdrop-filter:blur(3px);z-index:999;justify-content:center;align-items:center;padding:16px}
+.modal-backdrop.show{display:flex}
+.modal-box{background:#1e293b;border:1px solid rgba(56,189,248,.45);border-radius:18px;width:100%;max-width:360px;padding:20px;box-shadow:0 20px 40px rgba(0,0,0,.65);max-height:92vh;overflow:auto}
+.modal-title{margin:0 0 4px;font-size:17px;font-weight:900;color:var(--primary)}
+.modal-sub{margin:0 0 14px;font-size:12px;color:var(--muted)}
+.modal-label{display:block;font-size:12px;font-weight:800;color:#e2e8f0;margin-bottom:5px}
+.modal-input{width:100%;padding:10px 12px;margin-bottom:12px;border-radius:10px;border:1px solid var(--border);background:#0f172a;color:#fff;font-size:14px;font-weight:bold;outline:none}
+.modal-textarea{width:100%;padding:10px 12px;margin-bottom:12px;border-radius:10px;border:1px solid var(--border);background:#0f172a;color:#fff;font-size:14px;min-height:70px;resize:vertical;outline:none}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.btn-modal-save{padding:11px;border:none;border-radius:10px;background:var(--success);color:#002b11;font-weight:900;font-size:14px;cursor:pointer}
+.btn-modal-cancel{padding:11px;border:1px solid var(--border);border-radius:10px;background:#0f172a;color:#cbd5e1;font-weight:800;font-size:13px;cursor:pointer}
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:#0f172a;border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:10px;z-index:200}
+.bottom-bar button{background:none;border:none;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.bottom-bar button.active{color:var(--primary)}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#020617;border:1px solid #38bdf8;padding:11px 16px;border-radius:999px;z-index:1000;display:none;font-size:13px;font-weight:700;max-width:90%;text-align:center}
+.scanner-box{margin:0 14px 12px;background:#0f172a;border:1px dashed #38bdf8;border-radius:12px;padding:10px;display:flex;gap:8px;align-items:center}
+.scanner-box input{flex:1;padding:9px;background:#1e293b;border:1px solid var(--border);color:#fff;border-radius:8px;outline:none}
+</style>
 </head>
 <body>
 
-  <div id="loginScreen" class="login-screen">
-    <div class="login-card">
-      <div class="app-logo">
-        <img id="loginLogoImg" src="./1726248526371.jpeg" alt="AMIAl EXPRESS" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:28px;font-weight:900;color:#38bdf8;\'>A</span>';" />
-      </div>
-      <h1 class="login-title">AMIAl EXPRESS</h1>
-      <p class="login-sub">بوابة المناديب الذكية (v3.6) - سجل الدخول لعرض أوردراتك</p>
+<div id="loginScreen" class="login-screen">
+<div class="login-card">
+<div class="app-logo"><img id="loginLogoImg" src="./1726248526371.jpeg" alt="AMIAl EXPRESS" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:28px;font-weight:900;color:#38bdf8;\'>A</span>';"/></div>
+<h1 class="login-title">AMIAl EXPRESS</h1>
+<p class="login-sub">بوابة المناديب الذكية (V6 FINAL) - سجل الدخول لعرض أوردراتك</p>
+<div class="quick-reps" id="quickReps"></div>
+<input type="text" id="loginRepInput" class="auth-input" placeholder="اسم المندوب (مثال: ماهر26)"/>
+<input type="password" id="loginPinInput" class="auth-input" inputmode="numeric" placeholder="الكود السري (PIN)"/>
+<button id="loginBtn" class="btn-login" onclick="attemptLogin()">🔐 دخول وعرض الأوردرات</button>
+<div id="loginError" class="login-error"></div>
+<div id="gpsStatus" class="live-status off">📍 GPS: غير مفعل - سيتم التفعيل بعد الدخول</div>
+</div>
+</div>
 
-      <input type="text" id="loginRepInput" class="auth-input" placeholder="اسم المندوب (مثال: حبيبة)" />
-      <input type="password" id="loginPinInput" class="auth-input" inputmode="numeric" placeholder="الكود السري (PIN)" />
+<div id="appScreen">
+<div class="header">
+<div class="header-top"><div class="brand-wrap"><img id="headerLogoImg" src="./1726248526371.jpeg" alt="Logo" class="header-logo" onerror="this.style.display='none';"/><h1 class="brand-title">AMIAl EXPRESS</h1><span class="version-tag">V6 FINAL</span></div><button class="btn-logout" onclick="logoutRep()">🚪 خروج</button></div>
+<div class="control-bar">
+<div class="rep-badge" id="activeRepLabel">---</div>
+<select id="sheetSelect" class="sheet-select" onchange="loadAuthenticatedOrders()">
+<option value="1/12/2026">شهر 12</option>
+<option value="1/11/2026">شهر 11</option>
+<option value="1/10/2026">شهر 10</option>
+<option value="1/9/2026">شهر 9</option>
+<option value="1/8/2026">شهر 8</option>
+<option value="1/7/2026">شهر 7</option>
+<option value="1/6/2026">شهر 6</option>
+<option value="1/5/2026">شهر 5</option>
+<option value="1/4/2026">شهر 4</option>
+</select>
+<select id="daySelect" class="day-select" onchange="renderOrders()"><option value="all">كل الأيام</option></select>
+<button class="btn-refresh" onclick="loadAuthenticatedOrders()">🔄</button>
+</div>
+<div style="text-align:center;margin-top:8px"><span id="liveBadge" class="live-status off">⚫ غير متصل باللايف</span> <span style="font-size:11px;color:var(--muted)">موقعك بيتبعت للمدير كل 30 ثانية</span></div>
+</div>
 
-      <button id="loginBtn" class="btn-login" onclick="attemptLogin()">🔐 دخول وعرض الأوردرات</button>
-      <div id="loginError" class="login-error"></div>
-    </div>
-  </div>
+<div class="finance-panel">
+<div class="stats-row"><div class="sum-card"><span class="sum-num" id="totalOrdersCount" style="color:var(--primary)">0</span><span class="sum-lbl">الإجمالي</span></div><div class="sum-card"><span class="sum-num" id="deliveredOrdersCount" style="color:var(--success)">0</span><span class="sum-lbl">تم التسليم</span></div><div class="sum-card"><span class="sum-num" id="pendingOrdersCount" style="color:var(--warning)">0</span><span class="sum-lbl">متبقي</span></div></div>
+<div class="money-row"><div class="sum-card"><span class="sum-num" id="totalCashCollected" style="color:#fff">0</span><span class="sum-lbl">الإجمالي (K)</span></div><div class="sum-card"><span class="sum-num" id="totalCommission" style="color:var(--warning)">0</span><span class="sum-lbl">عمولتك</span></div><div class="sum-card" style="border-color:var(--success)"><span class="sum-num" id="netToPay" style="color:var(--success)">0</span><span class="sum-lbl">الصافي</span></div></div>
+<div class="progress"><i id="progressBar" style="width:0%"></i></div>
+<div class="progress-txt" id="progressTxt">ابدأ يومك يا بطل 💪</div>
+</div>
 
-  <div id="appScreen">
-    <div class="header">
-      <div class="header-top">
-        <div class="brand-wrap">
-          <img id="headerLogoImg" src="./1726248526371.jpeg" alt="Logo" class="header-logo" onerror="this.style.display='none';" />
-          <h1 class="brand-title">AMIAl EXPRESS</h1>
-          <span class="version-tag">v3.6</span>
-        </div>
-        <button class="btn-logout" onclick="logoutRep()">🚪 خروج</button>
-      </div>
-      <div class="control-bar">
-        <div class="rep-badge" id="activeRepLabel">---</div>
-        <select id="sheetSelect" class="sheet-select" onchange="loadAuthenticatedOrders()">
-          <option value="1/12/2026">شهر 12</option>
-          <option value="1/11/2026">شهر 11</option>
-          <option value="1/10/2026">شهر 10</option>
-        </select>
-        <select id="daySelect" class="day-select" onchange="renderOrders()">
-          <option value="all">كل الأيام</option>
-          <script>
-            for (let d = 1; d <= 31; d++) {
-              document.write(`<option value="${d}">يوم ${d}</option>`);
-            }
-          </script>
-        </select>
-        <button class="btn-refresh" onclick="loadAuthenticatedOrders()">🔄</button>
-      </div>
-    </div>
+<div class="scanner-box"><span>📷</span><input id="barcodeInput" placeholder="امسح باركود الأوردر للبحث الفوري..." onkeypress="if(event.key==='Enter')searchByBarcode()"><button class="btn-refresh" onclick="searchByBarcode()">بحث</button></div>
 
-    <div class="finance-panel">
-      <div class="stats-row">
-        <div class="sum-card">
-          <span class="sum-num" id="totalOrdersCount" style="color:var(--primary);">0</span>
-          <span class="sum-lbl">الإجمالي</span>
-        </div>
-        <div class="sum-card">
-          <span class="sum-num" id="deliveredOrdersCount" style="color:var(--success);">0</span>
-          <span class="sum-lbl">تم التسليم</span>
-        </div>
-        <div class="sum-card">
-          <span class="sum-num" id="pendingOrdersCount" style="color:var(--warning);">0</span>
-          <span class="sum-lbl">متبقي</span>
-        </div>
-      </div>
+<div class="sort-bar">
+<button class="sort-btn active" id="sortManualBtn" onclick="setSortMode('manual')">↕️ ترتيب يدوي</button>
+<button class="sort-btn" id="sortNameBtn" onclick="setSortMode('name')">🔤 ترتيب بالاسم</button>
+<button class="sort-btn ai" onclick="smartSortByMaps()">🤖 ترتيب ذكي بالخرائط</button>
+</div>
+<div style="margin:0 14px 8px;text-align:center"><button onclick="openRouteMaps()" style="width:100%;padding:10px;border:none;border-radius:11px;background:#f59e0b;color:#00111f;font-weight:900;cursor:pointer">🗺️ فتح كل العناوين على خرائط جوجل بترتيب الرحلة</button></div>
 
-      <div class="money-row">
-        <div class="sum-card">
-          <span class="sum-num" id="totalCashCollected" style="color:#fff;">0</span>
-          <span class="sum-lbl">الإجمالي (K)</span>
-        </div>
-        <div class="sum-card">
-          <span class="sum-num" id="totalCommission" style="color:var(--warning);">0</span>
-          <span class="sum-lbl">عمولتك</span>
-        </div>
-        <div class="sum-card" style="border-color: var(--success);">
-          <span class="sum-num" id="netToPay" style="color:var(--success);">0</span>
-          <span class="sum-lbl">الصافي</span>
-        </div>
-      </div>
-    </div>
+<div class="color-legend">
+<span class="legend-item"><span class="dot" style="background:#f59e0b"></span> تحت التسليم</span>
+<span class="legend-item"><span class="dot" style="background:#22c55e"></span> تم التسليم</span>
+<span class="legend-item"><span class="dot" style="background:#0ea5e9"></span> جزئي</span>
+<span class="legend-item"><span class="dot" style="background:#ef4444"></span> مرتجع</span>
+</div>
 
-    <div class="filter-tabs">
-      <div class="f-tab active" onclick="setFilter('all', this)">الكل</div>
-      <div class="f-tab" onclick="setFilter('pending', this)">⏳ تحت التسليم</div>
-      <div class="f-tab" onclick="setFilter('delivered', this)">✅ تم التسليم</div>
-      <div class="f-tab" onclick="setFilter('partial', this)">⚡ جزئي</div>
-      <div class="f-tab" onclick="setFilter('returned', this)">❌ مرتجع</div>
-    </div>
+<div class="filter-tabs">
+<div class="f-tab active" onclick="setFilter('all',this)">الكل</div>
+<div class="f-tab" onclick="setFilter('pending',this)">⏳ تحت التسليم</div>
+<div class="f-tab" onclick="setFilter('delivered',this)">✅ تم التسليم</div>
+<div class="f-tab" onclick="setFilter('partial',this)">⚡ جزئي</div>
+<div class="f-tab" onclick="setFilter('returned',this)">❌ مرتجع</div>
+</div>
 
-    <div class="search-box-wrap">
-      <span class="search-icon">🔍</span>
-      <input
-        type="text"
-        id="searchInput"
-        class="search-input"
-        placeholder="ابحث بالاسم، الهاتف، العنوان، الراسل، أو السعر..."
-        oninput="handleSearchInput()"
-      />
-      <button type="button" id="clearSearchBtn" class="btn-clear-search" title="مسح البحث" onclick="clearSearch()">✕</button>
-    </div>
+<div class="search-box-wrap">
+<span class="search-icon">🔍</span>
+<input type="text" id="searchInput" class="search-input" placeholder="ابحث بالاسم، الهاتف، العنوان، الراسل، أو السعر..." oninput="handleSearchInput()"/>
+<button class="btn-mic" onclick="voiceSearch()">🎤</button>
+<button type="button" id="clearSearchBtn" class="btn-clear-search" onclick="clearSearch()">✕</button>
+</div>
 
-    <div id="loader" class="loader">⏳ جاري التحميل...</div>
-    <div class="orders-container" id="ordersList"></div>
-  </div>
+<div id="loader" class="loader">⏳ جاري التحميل...</div>
+<div class="orders-container" id="ordersList"></div>
+</div>
 
-  <div id="statusModal" class="modal-backdrop">
-    <div class="modal-box">
-      <h3 id="modalTitle" class="modal-title">تحديث حالة الأوردر</h3>
-      <p id="modalSub" class="modal-sub">أدخل السعر (عمود K) والملاحظات (عمود N)</p>
+<div class="bottom-bar">
+<button class="active" onclick="window.scrollTo({top:0,behavior:'smooth'})">🏠<span>الرئيسية</span></button>
+<button onclick="document.getElementById('searchInput').focus()">🔍<span>بحث</span></button>
+<button onclick="smartSortByMaps()">🤖<span>ترتيب ذكي</span></button>
+<button onclick="copyDailySummary()">📋<span>ملخص</span></button>
+<button onclick="loadAuthenticatedOrders()">🔄<span>تحديث</span></button>
+</div>
 
-      <label id="modalPriceLabel" class="modal-label" for="modalPriceInput">السعر / المبلغ (يسمّع في عمود K):</label>
-      <input type="number" id="modalPriceInput" class="modal-input" inputmode="decimal" placeholder="أدخل المبلغ..." />
+<div id="statusModal" class="modal-backdrop"><div class="modal-box">
+<h3 id="modalTitle" class="modal-title">تحديث حالة الأوردر</h3>
+<p id="modalSub" class="modal-sub">أدخل السعر (عمود K) والملاحظات (عمود N)</p>
+<label class="modal-label">السعر / المبلغ (عمود K):</label>
+<div style="display:flex;gap:6px;margin-bottom:12px"><button onclick="setModalPrice('full')" style="flex:1;background:#0f172a;border:1px solid var(--border);color:#fff;padding:8px;border-radius:8px;cursor:pointer;font-weight:700">المبلغ كامل</button><button onclick="setModalPrice('half')" style="flex:1;background:#0f172a;border:1px solid var(--border);color:#fff;padding:8px;border-radius:8px;cursor:pointer;font-weight:700">نصف المبلغ</button><button onclick="setModalPrice('0')" style="flex:1;background:#0f172a;border:1px solid var(--border);color:#fff;padding:8px;border-radius:8px;cursor:pointer;font-weight:700">صفر</button></div>
+<input type="number" id="modalPriceInput" class="modal-input" inputmode="decimal" placeholder="أدخل المبلغ..."/>
+<label class="modal-label">الملاحظات (عمود N):</label>
+<input type="text" id="modalNotesInput" class="modal-input" placeholder="اكتب أي شيء هنا..."/>
+<div class="modal-actions"><button class="btn-modal-save" onclick="confirmModalUpdate()">✔ حفظ وإرسال</button><button class="btn-modal-cancel" onclick="closeStatusModal()">إلغاء</button></div>
+</div></div>
 
-      <label class="modal-label" for="modalNotesInput">الملاحظات (تسمّع في عمود N):</label>
-      <input type="text" id="modalNotesInput" class="modal-input" placeholder="اكتب أي شيء هنا..." />
+<div id="privateModal" class="modal-backdrop"><div class="modal-box">
+<h3 class="modal-title">⋮ ملاحظاتي الخاصة</h3>
+<p id="privateSub" class="modal-sub">دي ملاحظاتك انت بس - مش بتتغير في الشيت الأصلي ولا حد بيشوفها غيرك 🔒</p>
+<label class="modal-label">📍 عنواني الخاص:</label><textarea id="privateAddrInput" class="modal-textarea" placeholder="مثال: جنب صيدلية النور، الدور 3"></textarea>
+<label class="modal-label">📝 ملاحظتي الخاصة:</label><textarea id="privateNoteInput" class="modal-textarea" placeholder="مثال: العميل بعد العصر، بيرد واتساب بس"></textarea>
+<label class="modal-label">⭐ أولوية؟</label><select id="privatePriority" class="modal-input"><option value="">عادي</option><option value="urgent">🔴 مهم جداً - خلصه الأول</option><option value="later">🟡 خليه للآخر</option><option value="call">📞 لازم تكلمه الأول</option></select>
+<div class="modal-actions"><button class="btn-modal-save" onclick="savePrivateNote()">💾 حفظ ملاحظتي</button><button class="btn-modal-cancel" onclick="closePrivateModal()">إلغاء</button></div>
+<button onclick="clearPrivateNote()" style="width:100%;margin-top:8px;padding:10px;background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:10px;cursor:pointer;font-weight:700">🗑️ مسح ملاحظتي الخاصة</button>
+</div></div>
 
-      <div class="modal-actions">
-        <button type="button" id="modalSaveBtn" class="btn-modal-save" onclick="confirmModalUpdate()">✔ حفظ وإرسال</button>
-        <button type="button" class="btn-modal-cancel" onclick="closeStatusModal()">إلغاء</button>
-      </div>
-    </div>
-  </div>
+<div id="toast" class="toast"></div>
 
-  <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwZBGcTO5EWaSKcIFf8SUPcBZ47yjYgMd11FTAw_MkGKAsEdSMUnGote_Cnts5jvY0fuQ/exec";
-    const LOCK_KEYWORDS_NORM = ["شبراوى", "راقي","محمد","محمود"];
+<script>
+const WEB_APP_URL="https://script.google.com/macros/s/AKfycbwZBGcTO5EWaSKcIFf8SUPcBZ47yjYgMd11FTAw_MkGKAsEdSMUnGote_Cnts5jvY0fuQ/exec";
+const LOCK_KEYWORDS_NORM=["شبراوى","راقي","محمد","محمود"];
+let currentRep="",currentPin="",currentOrdersCache=[],defaultCommRate=25,activeFilter="all",searchQuery="",pendingModalData=null,privateModalRow=null,sortMode="manual",manualOrder={},liveInterval=null,lastLocation=null;
 
-    let currentRep = "";
-    let currentPin = "";
-    let currentOrdersCache = [];
-    let defaultCommRate = 25;
-    let activeFilter = "all";
-    let searchQuery = "";
-    let pendingModalData = null;
+function toast(m){let t=document.getElementById("toast");t.textContent=m;t.style.display="block";setTimeout(()=>t.style.display="none",2600)}
+function vibrate(){try{navigator.vibrate&&navigator.vibrate(60)}catch(e){}}
+function normalizeAr(s){return String(s||"").trim().replace(/\s+/g," ").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").toLowerCase()}
+function isOrderLocked(o){if(o&&o.isLocked===true)return true;let n=normalizeAr(o&&o.confirmL);if(!n)return false;return LOCK_KEYWORDS_NORM.some(k=>n.includes(k))}
 
-    function normalizeAr(str) {
-      return String(str || "")
-        .trim()
-        .replace(/\s+/g, " ")
-        .replace(/[أإآ]/g, "ا")
-        .replace(/ة/g, "ه")
-        .replace(/ى/g, "ي")
-        .toLowerCase();
-    }
+// بناء أيام الشهر
+(function(){let sel=document.getElementById("daySelect");for(let d=1;d<=31;d++){let o=document.createElement("option");o.value=d;o.textContent="يوم "+d;sel.appendChild(o)}})();
+// مناديب سريعة
+let quick=["ماهر26","حبيبة","الأخضر","محمد","محمود"];
+let qh="";quick.forEach(n=>qh+=`<button onclick="quickLogin('${n}')">${n}</button>`);document.getElementById("quickReps").innerHTML=qh;
+function quickLogin(n){document.getElementById("loginRepInput").value=n;document.getElementById("loginPinInput").focus()}
 
-    function isOrderLocked(order) {
-      if (order && order.isLocked === true) return true;
-      const normL = normalizeAr(order && order.confirmL);
-      if (!normL) return false;
-      return LOCK_KEYWORDS_NORM.some(k => normL.includes(k));
-    }
-
-    window.onload = function () {
-      if (window.__APP_ICON_URL__) {
-        const loginImg = document.getElementById("loginLogoImg");
-        const headerImg = document.getElementById("headerLogoImg");
-        if (loginImg) loginImg.src = window.__APP_ICON_URL__;
-        if (headerImg) headerImg.src = window.__APP_ICON_URL__;
-      }
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlRep = urlParams.get("rep");
-      const urlPin = urlParams.get("pin");
-
-      if (urlRep && urlPin) {
-        document.getElementById("loginRepInput").value = urlRep;
-        document.getElementById("loginPinInput").value = urlPin;
-        attemptLogin();
-        return;
-      }
-
-      const savedRep = localStorage.getItem("amial_auth_rep");
-      const savedPin = localStorage.getItem("amial_auth_pin");
-      if (savedRep && savedPin) {
-        currentRep = savedRep;
-        currentPin = savedPin;
-        showAppScreen();
-        loadAuthenticatedOrders();
-      }
+// ===== نظام اللايف - إرسال الموقع كل 30 ثانية =====
+function startLiveTracking(){
+  if(liveInterval) clearInterval(liveInterval);
+  // 1 - إرسال فوري أول ما يفتح
+  sendLiveLocation();
+  // 2 - إرسال كل 30 ثانية
+  liveInterval=setInterval(sendLiveLocation, 30000);
+  console.log("✅ تم تشغيل تتبع اللايف - كل 30 ثانية");
+  let badge=document.getElementById("liveBadge");
+  if(badge){badge.textContent="🟢 متصل باللايف - موقعك بيتبعت كل 30 ثانية";badge.className="live-status on";}
+  let gps=document.getElementById("gpsStatus");
+  if(gps){gps.textContent="📍 GPS: شغال - موقعك بيتبعت للمدير";gps.className="live-status on";}
+}
+function stopLiveTracking(){
+  if(liveInterval){clearInterval(liveInterval);liveInterval=null;}
+  // علم النظام الرئيسي إن المندوب قفل
+  try{
+    let live=JSON.parse(localStorage.getItem('amial_live_reps')||"[]");
+    live=live.filter(r=>r.name!==currentRep);
+    localStorage.setItem('amial_live_reps',JSON.stringify(live));
+  }catch(e){}
+  let badge=document.getElementById("liveBadge");
+  if(badge){badge.textContent="⚫ غير متصل باللايف";badge.className="live-status off";}
+}
+function sendLiveLocation(){
+  if(!currentRep) return;
+  if(!navigator.geolocation){
+    // لو مفيش GPS، ابعت بدون موقع بس علم إنه أونلاين
+    saveLiveToStorage(null,null);
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(pos=>{
+    let lat=pos.coords.latitude, lng=pos.coords.longitude;
+    lastLocation={lat,lng};
+    saveLiveToStorage(lat,lng);
+    // حاول تبعت للسيرفر كمان (لو السيرفر بيدعم)
+    fetch(`${WEB_APP_URL}?action=updateLive&repName=${encodeURIComponent(currentRep)}&lat=${lat}&lng=${lng}&orders=${currentOrdersCache.length}&delivered=${currentOrdersCache.filter(o=>getOrderStatusType(o)==="delivered").length}&_t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
+  },err=>{
+    // لو رفض GPS، ابعت إنه أونلاين بدون موقع
+    saveLiveToStorage(null,null);
+    console.log("GPS مرفوض أو غير متاح:",err.message);
+  },{enableHighAccuracy:true,timeout:8000,maximumAge:10000});
+}
+function saveLiveToStorage(lat,lng){
+  try{
+    let live=JSON.parse(localStorage.getItem('amial_live_reps')||"[]");
+    let deliveredCount=currentOrdersCache.filter(o=>getOrderStatusType(o)==="delivered").length;
+    let cashCount=currentOrdersCache.reduce((sum,o)=>sum+(parseFloat(o.collectedK)||0),0);
+    // صورة صفحة المندوب - لقطة مصغرة من بياناته
+    let previewText=`صفحة ${currentRep} - ${deliveredCount}/${currentOrdersCache.length} تم - ${cashCount.toLocaleString()} ج.م`;
+    let obj={
+      name:currentRep,
+      lat:lat||30.7865, lng:lng||31.0004,
+      area:lat?`GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)}`:"الموقع غير مفعل - أونلاين",
+      lastSeen:Date.now(),
+      orders:currentOrdersCache.length,
+      delivered:deliveredCount,
+      cash:cashCount,
+      phone:"",
+      img:`https://via.placeholder.com/400x200/0f172a/38bdf8?text=${encodeURIComponent(previewText)}`,
+      sheet:document.getElementById("sheetSelect")?document.getElementById("sheetSelect").value:"",
+      status:"online"
     };
+    let idx=live.findIndex(r=>r.name===currentRep);
+    if(idx>=0) live[idx]=obj; else live.push(obj);
+    localStorage.setItem('amial_live_reps',JSON.stringify(live));
+    // كمان احفظ نسخة منفصلة للمدير
+    localStorage.setItem('amial_live_'+currentRep,JSON.stringify(obj));
+  }catch(e){console.log("خطأ حفظ اللايف",e)}
+}
+// لما المندوب يقفل التبويب أو يخرج، حاول تبعت إنه قفل
+window.addEventListener('beforeunload',()=>{
+  try{
+    let live=JSON.parse(localStorage.getItem('amial_live_reps')||"[]");
+    let idx=live.findIndex(r=>r.name===currentRep);
+    if(idx>=0){live[idx].status="offline";live[idx].lastSeen=Date.now()-120000;localStorage.setItem('amial_live_reps',JSON.stringify(live));}
+  }catch(e){}
+});
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){ /* المندوب خفي التطبيق - سيبه أونلاين 2 دقيقة */ }
+  else if(currentRep){ sendLiveLocation(); }
+});
 
-    async function attemptLogin() {
-      const repVal = document.getElementById("loginRepInput").value.trim();
-      const pinVal = document.getElementById("loginPinInput").value.trim();
-      const errEl = document.getElementById("loginError");
-      const btn = document.getElementById("loginBtn");
+// ملاحظات خاصة - لا تؤثر على الشيت الأصلي
+function getPrivateKey(row){return `amial_private_${currentRep}_${document.getElementById("sheetSelect").value}_${row}`}
+function getPrivate(row){try{return JSON.parse(localStorage.getItem(getPrivateKey(row))||"{}")}catch(e){return {}}}
+function savePrivateNote(){if(privateModalRow==null&&privateModalRow!==0)return;let data={addr:document.getElementById("privateAddrInput").value.trim(),note:document.getElementById("privateNoteInput").value.trim(),priority:document.getElementById("privatePriority").value,updated:Date.now()};localStorage.setItem(getPrivateKey(privateModalRow),JSON.stringify(data));closePrivateModal();toast("تم حفظ ملاحظتك الخاصة 🔒");renderOrders()}
+function clearPrivateNote(){if(privateModalRow==null)return;localStorage.removeItem(getPrivateKey(privateModalRow));closePrivateModal();toast("تم مسح ملاحظتك");renderOrders()}
+function openPrivateModal(row){privateModalRow=row;let o=currentOrdersCache.find(x=>x.rowIndex===row)||{};let p=getPrivate(row);document.getElementById("privateSub").textContent=`العميل: ${o.clientName||""} - ملاحظاتك انت بس 🔒`;document.getElementById("privateAddrInput").value=p.addr||"";document.getElementById("privateNoteInput").value=p.note||"";document.getElementById("privatePriority").value=p.priority||"";document.getElementById("privateModal").classList.add("show")}
+function closePrivateModal(){document.getElementById("privateModal").classList.remove("show");privateModalRow=null}
+function toggleDots(row,ev){ev.stopPropagation();document.querySelectorAll(".dots-menu").forEach(m=>{if(m.id!==`dots-${row}`)m.classList.remove("show")});let m=document.getElementById(`dots-${row}`);if(m)m.classList.toggle("show")}
+document.addEventListener("click",e=>{if(!e.target.closest(".dots-btn")&&!e.target.closest(".dots-menu"))document.querySelectorAll(".dots-menu").forEach(m=>m.classList.remove("show"))});
+function copyOrder(row){let o=currentOrdersCache.find(x=>x.rowIndex===row);if(!o)return;let p=getPrivate(row);let txt=`العميل: ${o.clientName}\nالهاتف: ${formatEgyptianPhone(o.phone)}\nالعنوان الأصلي: ${[o.governorate,o.address].join(" - ")}\n${p.addr?`عنواني: ${p.addr}\n`:""}${p.note?`ملاحظتي: ${p.note}\n`:""}السعر: ${o.price} ج.م`;navigator.clipboard.writeText(txt).then(()=>toast("تم نسخ بيانات العميل ✅"))}
+function openMapsForOrder(row){let o=currentOrdersCache.find(x=>x.rowIndex===row);if(!o)return;let p=getPrivate(row);let addr=p.addr||[o.governorate,o.address].join(" - ");window.open(`https://www.google.com/maps/search/${encodeURIComponent(addr)}`,'_blank')}
+function callClient(row){let o=currentOrdersCache.find(x=>x.rowIndex===row);let ph=formatEgyptianPhone(o.phone);if(ph)window.location.href=`tel:${ph}`}
+function setSortMode(mode){sortMode=mode;document.getElementById("sortManualBtn").classList.toggle("active",mode==="manual");document.getElementById("sortNameBtn").classList.toggle("active",mode==="name");renderOrders();toast(mode==="manual"?"ترتيب يدوي - اسحب الأوردرات":"ترتيب بالاسم A-Z")}
+async function smartSortByMaps(){
+  toast("🤖 جاري تحديد مكانك وترتيب أقرب عنوان...");
+  if(!navigator.geolocation){fallbackSmartSort();return}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    let arr=[...currentOrdersCache];
+    arr.sort((a,b)=>{
+      let pa=getPrivate(a.rowIndex),pb=getPrivate(b.rowIndex);
+      if(pa.priority==="urgent"&&pb.priority!=="urgent")return -1;
+      if(pb.priority==="urgent"&&pa.priority!=="urgent")return 1;
+      let rank={pending:0,partial:1,returned:2,delivered:3};
+      if(rank[getOrderStatusType(a)]!==rank[getOrderStatusType(b)])return rank[getOrderStatusType(a)]-rank[getOrderStatusType(b)];
+      return String(a.governorate||"").localeCompare(String(b.governorate||""),'ar');
+    });
+    manualOrder={};arr.forEach((o,i)=>manualOrder[o.rowIndex]=i);
+    localStorage.setItem(`amial_order_${currentRep}_${document.getElementById("sheetSelect").value}`,JSON.stringify(manualOrder));
+    sortMode="manual";document.getElementById("sortManualBtn").classList.add("active");
+    renderOrders();toast(`✅ تم الترتيب الذكي - ${arr.length} أوردر`);
+    setTimeout(()=>{if(confirm("عايز تفتح مسار الرحلة كله على خرائط جوجل؟"))openRouteMaps(pos.coords.latitude,pos.coords.longitude)},600);
+  },()=>fallbackSmartSort(),{timeout:5000});
+}
+function fallbackSmartSort(){let arr=[...currentOrdersCache];arr.sort((a,b)=>{let pa=getPrivate(a.rowIndex),pb=getPrivate(b.rowIndex);if(pa.priority==="urgent")return -1;if(pb.priority==="urgent")return 1;let rank={pending:0,partial:1,returned:2,delivered:3};return rank[getOrderStatusType(a)]-rank[getOrderStatusType(b)]});manualOrder={};arr.forEach((o,i)=>manualOrder[o.rowIndex]=i);localStorage.setItem(`amial_order_${currentRep}_${document.getElementById("sheetSelect").value}`,JSON.stringify(manualOrder));renderOrders();toast("✅ تم الترتيب الذكي (بدون GPS)")}
+function openRouteMaps(lat,lng){
+  let orders=getOrdersBySelectedDay().filter(o=>getOrderStatusType(o)==="pending"||getOrderStatusType(o)==="partial");
+  if(!orders.length){toast("مفيش أوردرات متبقية للرحلة");return}
+  let dests=orders.slice(0,9).map(o=>{let p=getPrivate(o.rowIndex);return encodeURIComponent(p.addr||[o.governorate,o.address].join(" - "))});
+  let origin=lat?`${lat},${lng}`:"";
+  window.open(`https://www.google.com/maps/dir/${origin}/${dests.join("/")}`,'_blank');toast(`🗺️ فتح مسار ${dests.length} عنوان`);
+}
 
-      if (!repVal || !pinVal) {
-        errEl.innerText = "أدخل اسم المندوب والكود السري!";
-        return;
-      }
-
-      errEl.innerText = "";
-      btn.disabled = true;
-      btn.innerText = "⏳ جاري التحقق...";
-
-      const sheetName = document.getElementById("sheetSelect").value;
-      const url = `${WEB_APP_URL}?action=loginAndGetOrders&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(repVal)}&pin=${encodeURIComponent(pinVal)}&_t=${Date.now()}`;
-
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        const data = await res.json();
-
-        btn.disabled = false;
-        btn.innerText = "🔐 دخول وعرض الأوردرات";
-
-        if (data.status === "success") {
-          currentRep = repVal;
-          currentPin = pinVal;
-          defaultCommRate = data.defaultCommission || 25;
-          localStorage.setItem("amial_auth_rep", currentRep);
-          localStorage.setItem("amial_auth_pin", currentPin);
-
-          showAppScreen();
-          currentOrdersCache = data.orders || [];
-          renderOrders();
-        } else {
-          errEl.innerText = data.message || "بيانات الدخول غير صحيحة!";
-        }
-      } catch (e) {
-        btn.disabled = false;
-        btn.innerText = "🔐 دخول وعرض الأوردرات";
-        errEl.innerText = "تعذر الاتصال بالسيرفر.";
-      }
-    }
-
-    function showAppScreen() {
-      document.getElementById("loginScreen").style.display = "none";
-      document.getElementById("appScreen").style.display = "block";
-      document.getElementById("activeRepLabel").innerText = currentRep;
-    }
-
-    function logoutRep() {
-      localStorage.removeItem("amial_auth_rep");
-      localStorage.removeItem("amial_auth_pin");
-      currentRep = "";
-      currentPin = "";
-      currentOrdersCache = [];
-      searchQuery = "";
-      const searchEl = document.getElementById("searchInput");
-      if (searchEl) searchEl.value = "";
-      const clearBtn = document.getElementById("clearSearchBtn");
-      if (clearBtn) clearBtn.classList.remove("visible");
-      document.getElementById("appScreen").style.display = "none";
-      document.getElementById("loginScreen").style.display = "flex";
-      document.getElementById("loginPinInput").value = "";
-    }
-
-    async function loadAuthenticatedOrders() {
-      const sheetName = document.getElementById("sheetSelect").value;
-      document.getElementById("loader").style.display = "block";
-      document.getElementById("ordersList").innerHTML = "";
-
-      const url = `${WEB_APP_URL}?action=loginAndGetOrders&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&_t=${Date.now()}`;
-
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        const data = await res.json();
-        document.getElementById("loader").style.display = "none";
-
-        if (data.status === "success") {
-          defaultCommRate = data.defaultCommission || 25;
-          currentOrdersCache = data.orders || [];
-          renderOrders();
-        } else {
-          alert(data.message || "انتهت صلاحية الجلسة.");
-          logoutRep();
-        }
-      } catch (e) {
-        document.getElementById("loader").style.display = "none";
-        alert("خطأ في تحديث البيانات.");
-      }
-    }
-
-    function setFilter(filterType, tabEl) {
-      activeFilter = filterType;
-      document.querySelectorAll(".f-tab").forEach(t => t.classList.remove("active"));
-      tabEl.classList.add("active");
-      renderOrders();
-    }
-
-    function handleSearchInput() {
-      const inputEl = document.getElementById("searchInput");
-      const clearBtn = document.getElementById("clearSearchBtn");
-      searchQuery = (inputEl ? inputEl.value : "").trim().toLowerCase();
-      if (clearBtn) {
-        clearBtn.classList.toggle("visible", searchQuery.length > 0);
-      }
-      renderOrders();
-    }
-
-    function clearSearch() {
-      const inputEl = document.getElementById("searchInput");
-      if (inputEl) {
-        inputEl.value = "";
-        inputEl.focus();
-      }
-      searchQuery = "";
-      const clearBtn = document.getElementById("clearSearchBtn");
-      if (clearBtn) clearBtn.classList.remove("visible");
-      renderOrders();
-    }
-
-    function matchesSearchQuery(order, query) {
-      if (!query) return true;
-      const haystacks = [
-        order.clientName,
-        order.phone,
-        order.governorate,
-        order.address,
-        order.sender,
-        order.notesN,
-        order.confirmL,
-        String(order.price || ""),
-        String(order.collectedK || "")
-      ];
-      return haystacks.some(val => String(val || "").toLowerCase().includes(query));
-    }
-
-    function formatEgyptianPhone(rawPhone) {
-      let clean = String(rawPhone || "").replace(/[^0-9]/g, "");
-      if (clean.length === 10 && clean.startsWith("1")) clean = "0" + clean;
-      return clean;
-    }
-
-    function extractDayFromColumnX(dateVal) {
-      if (!dateVal) return "";
-      const str = String(dateVal).trim();
-      const slashMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
-      if (slashMatch) {
-        return String(parseInt(slashMatch[1], 10));
-      }
-      const parts = str.split(/[\s\/\-]+/);
-      for (let p of parts) {
-        const num = parseInt(p, 10);
-        if (!isNaN(num) && num >= 1 && num <= 31 && String(num) === p.replace(/^0+/, "")) {
-          return String(num);
-        }
-      }
-      return "";
-    }
-
-    function getOrderStatusType(order) {
-      const priceNum = parseFloat(order.price) || 0;
-      const collectedNum = parseFloat(order.collectedK) || 0;
-      const confirmL = String(order.confirmL || "").trim();
-
-      if (confirmL === "مرتجع") return "returned";
-      if (confirmL === "جزئي" || (collectedNum > 0 && priceNum > 0 && collectedNum < priceNum)) return "partial";
-      if (confirmL === "تم التسليم" || (collectedNum > 0 && priceNum > 0 && collectedNum >= priceNum)) return "delivered";
-      return "pending";
-    }
-
-    function getOrdersBySelectedDay() {
-      const selectedDay = document.getElementById("daySelect").value;
-      if (selectedDay === "all") return currentOrdersCache;
-
-      return currentOrdersCache.filter(order => {
-        const dayFromX = extractDayFromColumnX(order.date);
-        return dayFromX === selectedDay;
-      });
-    }
-
-    function recalculateTotals(dayOrders) {
-      let totalCount = dayOrders.length;
-      let deliveredCount = 0;
-      let totalCash = 0;
-      let totalComm = 0;
-
-      dayOrders.forEach(order => {
-        const collectedNum = parseFloat(order.collectedK) || 0;
-        const statusType = getOrderStatusType(order);
-
-        if (collectedNum > 0) {
-          totalCash += collectedNum;
-        }
-        if (statusType === "delivered" || statusType === "partial" || collectedNum > 0) {
-          deliveredCount++;
-          totalComm += (order.commissionR > 0 ? order.commissionR : defaultCommRate);
-        }
-      });
-
-      document.getElementById("totalOrdersCount").innerText = totalCount;
-      document.getElementById("deliveredOrdersCount").innerText = deliveredCount;
-      document.getElementById("pendingOrdersCount").innerText = totalCount - deliveredCount;
-      document.getElementById("totalCashCollected").innerText = totalCash.toLocaleString() + " ج.م";
-      document.getElementById("totalCommission").innerText = totalComm.toLocaleString() + " ج.م";
-      document.getElementById("netToPay").innerText = (totalCash - totalComm).toLocaleString() + " ج.م";
-    }
-
-    function renderOrders() {
-      const listEl = document.getElementById("ordersList");
-      const selectedDay = document.getElementById("daySelect").value;
-      listEl.innerHTML = "";
-
-      const dayOrders = getOrdersBySelectedDay();
-      recalculateTotals(dayOrders);
-
-      const filteredOrders = dayOrders.filter(order => {
-        const statusType = getOrderStatusType(order);
-        const matchesTab = activeFilter === "all" || statusType === activeFilter;
-        return matchesTab && matchesSearchQuery(order, searchQuery);
-      });
-
-      if (filteredOrders.length === 0) {
-        const dayLabel = selectedDay === "all" ? "كل الأيام" : `يوم ${selectedDay}`;
-        const searchHint = searchQuery ? ` المطابقة للبحث "${searchQuery}"` : "";
-        listEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted);">لا توجد أوردرات${searchHint} في (${dayLabel}).</div>`;
-        return;
-      }
-
-      filteredOrders.forEach(order => {
-        const phone = formatEgyptianPhone(order.phone);
-        const waPhone = phone.startsWith("0") ? "2" + phone : phone;
-        const priceNum = parseFloat(order.price) || 0;
-        const collectedNum = parseFloat(order.collectedK) || 0;
-        const statusType = getOrderStatusType(order);
-        const locked = isOrderLocked(order);
-
-        const fullAddress = [order.governorate, order.address].filter(Boolean).join(" - ");
-        const prefilledMsg = `مساء الخير يا فندم, بنتواصل مع حضرتك لتأكيد الطلب الخاص بكم:\nلتأكيد الطلب و بدء عمليه الشحن\nبرجاء الرد بكلمه تأكيد\nو ارسال العنوان تفصيلي مع علامه مميزه بالعنوان (سوبرماركت / مدرسه / قهوه / مسجد ... ), او لوكيشن و لو في رقم اضافي لحضرتك ممكن تبعته علشان المندوب يقدر يسلم حضرتك الطلب\nشكرا لزوق حضرتك`;
-        const encodedMsg = encodeURIComponent(prefilledMsg);
-
-        const card = document.createElement("div");
-        card.className = `order-card ${locked ? "locked" : statusType}`;
-        card.innerHTML = `
-          <div class="client-row">
-            <h3 class="client-name">${order.clientName || "بدون اسم"}</h3>
-            <div class="badges-wrap">
-              ${locked ? `<span class="lock-badge">🔒 مقفل</span>` : ""}
-              <span class="price-badge">${priceNum} ج.م</span>
-            </div>
-          </div>
-          <div class="info-line"><span>📍 العنوان:</span> ${fullAddress || "غير مسجل"}</div>
-          <div class="info-line"><span>📱 الهاتف:</span> <b dir="ltr">${phone || "غير مسجل"}</b> | <span>🏷️ الراسل:</span> ${order.sender || "-"}</div>
-          <div class="info-line"><span>📅 التاريخ (X):</span> ${order.date || "غير محدد"}</div>
-          <div class="info-line"><span>💰 الوارد المسجل (K):</span> <b style="color:var(--success);">${collectedNum} ج.م</b></div>
-          <div class="info-line"><span>📝 ملاحظات (N):</span> ${order.notesN || "-"}</div>
-          ${order.confirmL ? `<div class="info-line"><span>📌 الحالة / التقفيل (L):</span> <b>${order.confirmL}</b></div>` : ""}
-
-          <div class="contact-actions">
-            <a href="${phone ? `tel:${phone}` : '#'}" class="c-btn btn-call">📞 اتصال</a>
-            <a href="${waPhone ? `https://wa.me/${waPhone}?text=${encodedMsg}` : '#'}" target="_blank" class="c-btn btn-wa">💬 واتساب</a>
-            <a href="${phone ? `sms:${phone}?body=${encodedMsg}` : '#'}" class="c-btn btn-sms">✉️ SMS</a>
-          </div>
-
-          <div class="status-controls">
-            <select id="select-${order.rowIndex}" class="status-select" ${locked ? "disabled" : ""} onchange="handleStatusChoice(${order.rowIndex}, ${priceNum})">
-              <option value="تحت التسليم" ${statusType === "pending" ? "selected" : ""}>⏳ تحت التسليم</option>
-              <option value="تم التسليم" ${statusType === "delivered" ? "selected" : ""}>✅ تم التسليم</option>
-              <option value="جزئي" ${statusType === "partial" ? "selected" : ""}>⚡ جزئي</option>
-              <option value="مرتجع" ${statusType === "returned" ? "selected" : ""}>❌ مرتجع</option>
-            </select>
-            <button id="btn-${order.rowIndex}" class="btn-save-status" ${locked ? "disabled" : ""} onclick="handleConfirmButton(${order.rowIndex}, ${priceNum})">${locked ? "🔒 مقفل" : "تأكيد"}</button>
-          </div>
-        `;
-        listEl.appendChild(card);
-      });
-    }
-
-    function handleStatusChoice(rowIndex, originalPrice) {
-      const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex);
-      if (isOrderLocked(orderObj)) {
-        renderOrders();
-        return;
-      }
-      const selectedStatus = document.getElementById(`select-${rowIndex}`).value;
-      if (selectedStatus === "تم التسليم" || selectedStatus === "جزئي" || selectedStatus === "مرتجع") {
-        openStatusModal(rowIndex, originalPrice, selectedStatus);
-      }
-    }
-
-    function handleConfirmButton(rowIndex, originalPrice) {
-      const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex);
-      if (isOrderLocked(orderObj)) {
-        alert("هذا الأوردر مقفل ولا يمكن تعديله.");
-        return;
-      }
-      const selectedStatus = document.getElementById(`select-${rowIndex}`).value;
-      if (selectedStatus === "تم التسليم" || selectedStatus === "جزئي" || selectedStatus === "مرتجع") {
-        openStatusModal(rowIndex, originalPrice, selectedStatus);
-      } else {
-        sendUpdateToSheet(rowIndex, selectedStatus, "", "");
-      }
-    }
-
-    function openStatusModal(rowIndex, originalPrice, statusVal) {
-      const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex) || {};
-      if (isOrderLocked(orderObj)) {
-        alert("هذا الأوردر مقفل ولا يمكن تعديله.");
-        return;
-      }
-      pendingModalData = { rowIndex, originalPrice, statusVal };
-
-      document.getElementById("modalTitle").innerText = `حالة الأوردر: ${statusVal}`;
-      document.getElementById("modalSub").innerText = `العميل: ${orderObj.clientName || ""} | أصل السعر: ${originalPrice} ج.م`;
-
-      const priceLabel = document.getElementById("modalPriceLabel");
-      const priceInput = document.getElementById("modalPriceInput");
-      const notesInput = document.getElementById("modalNotesInput");
-
-      priceLabel.style.display = "block";
-      priceInput.style.display = "block";
-
-      if (statusVal === "تم التسليم") {
-        priceInput.value = originalPrice > 0 ? originalPrice : (orderObj.collectedK || "");
-      } else if (statusVal === "جزئي") {
-        priceInput.value = orderObj.collectedK > 0 ? orderObj.collectedK : "";
-      } else if (statusVal === "مرتجع") {
-        priceInput.value = "";
-      }
-
-      notesInput.value = "";
-
-      document.getElementById("statusModal").classList.add("show");
-      setTimeout(() => priceInput.focus(), 100);
-    }
-
-    function closeStatusModal() {
-      document.getElementById("statusModal").classList.remove("show");
-      pendingModalData = null;
-      renderOrders();
-    }
-
-    async function confirmModalUpdate() {
-      if (!pendingModalData) return;
-
-      const { rowIndex, statusVal } = pendingModalData;
-      const rawPrice = document.getElementById("modalPriceInput").value.trim();
-      const finalNotes = document.getElementById("modalNotesInput").value.trim();
-
-      document.getElementById("statusModal").classList.remove("show");
-      pendingModalData = null;
-
-      await sendUpdateToSheet(rowIndex, statusVal, rawPrice, finalNotes);
-    }
-
-    async function sendUpdateToSheet(rowIndex, statusVal, priceParamStr, finalNotes) {
-      const sheetName = document.getElementById("sheetSelect").value;
-      const btn = document.getElementById(`btn-${rowIndex}`);
-      if (btn) {
-        btn.disabled = true;
-        btn.innerText = "⏳...";
-      }
-
-      try {
-        const url = `${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheetName)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${encodeURIComponent(priceParamStr)}¬es=${encodeURIComponent(finalNotes)}&_t=${Date.now()}`;
-        const res = await fetch(url, { cache: "no-store" });
-        const json = await res.json();
-
-        if (json.status === "success") {
-          const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex);
-          if (orderObj) {
-            if (json.savedPrice !== undefined) {
-              orderObj.collectedK = Number(json.savedPrice) || 0;
-            }
-            orderObj.confirmL = json.savedStatus || statusVal;
-            if (json.savedNotes !== undefined) {
-              orderObj.notesN = json.savedNotes;
-            } else {
-              orderObj.notesN = finalNotes;
-            }
-            orderObj.isLocked = isOrderLocked(orderObj);
-          }
-          if (btn) btn.innerText = "✔ تم";
-          setTimeout(() => renderOrders(), 300);
-        } else {
-          if (json.locked) {
-            const orderObj = currentOrdersCache.find(o => o.rowIndex === rowIndex);
-            if (orderObj) orderObj.isLocked = true;
-            renderOrders();
-          }
-          alert(json.message || "حدث خطأ أثناء التحديث.");
-          if (btn && !json.locked) {
-            btn.disabled = false;
-            btn.innerText = "تأكيد";
-          }
-        }
-      } catch (e) {
-        alert("تعذر الاتصال بالسيرفر، يرجى المحاولة مرة أخرى.");
-        if (btn) {
-          btn.disabled = false;
-          btn.innerText = "تأكيد";
-        }
-      }
-    }
-  </script>
+window.onload=function(){
+  if(window.__APP_ICON_URL__){document.getElementById("loginLogoImg").src=window.__APP_ICON_URL__;document.getElementById("headerLogoImg").src=window.__APP_ICON_URL__}
+  let p=new URLSearchParams(location.search);let ur=p.get("rep"),up=p.get("pin");
+  if(ur&&up){document.getElementById("loginRepInput").value=ur;document.getElementById("loginPinInput").value=up;attemptLogin();return}
+  let sr=localStorage.getItem("amial_auth_rep"),sp=localStorage.getItem("amial_auth_pin");
+  if(sr&&sp){currentRep=sr;currentPin=sp;showAppScreen();let cache=localStorage.getItem("amial_orders_"+sr);if(cache){try{currentOrdersCache=JSON.parse(cache);renderOrders()}catch(e){}}loadAuthenticatedOrders();startLiveTracking();}
+};
+async function attemptLogin(){
+  let rep=document.getElementById("loginRepInput").value.trim();let pin=document.getElementById("loginPinInput").value.trim();let err=document.getElementById("loginError");let btn=document.getElementById("loginBtn");
+  if(!rep||!pin){err.innerText="أدخل اسم المندوب والكود السري!";return}
+  err.innerText="";btn.disabled=true;btn.innerText="⏳ جاري التحقق...";
+  let sheet=document.getElementById("sheetSelect").value;
+  let url=`${WEB_APP_URL}?action=loginAndGetOrders&sheetName=${encodeURIComponent(sheet)}&repName=${encodeURIComponent(rep)}&pin=${encodeURIComponent(pin)}&_t=${Date.now()}`;
+  try{
+    let res=await fetch(url,{cache:"no-store"});let data=await res.json();btn.disabled=false;btn.innerText="🔐 دخول وعرض الأوردرات";
+    if(data.status==="success"){
+      currentRep=rep;currentPin=pin;defaultCommRate=data.defaultCommission||25;
+      localStorage.setItem("amial_auth_rep",currentRep);localStorage.setItem("amial_auth_pin",currentPin);localStorage.setItem("amial_orders_"+rep,JSON.stringify(data.orders||[]));
+      showAppScreen();currentOrdersCache=data.orders||[];renderOrders();toast("أهلاً بيك يا "+rep+" 🎉");vibrate();
+      // تشغيل اللايف بعد الدخول مباشرة
+      startLiveTracking();
+    } else err.innerText=data.message||"بيانات الدخول غير صحيحة!";
+  }catch(e){
+    btn.disabled=false;btn.innerText="🔐 دخول وعرض الأوردرات";err.innerText="تعذر الاتصال - حاول تاني";
+    let cache=localStorage.getItem("amial_orders_"+rep);if(cache){currentRep=rep;currentPin=pin;showAppScreen();currentOrdersCache=JSON.parse(cache);renderOrders();toast("تم الدخول من البيانات المحفوظة (بدون نت)");startLiveTracking();}
+  }
+}
+function showAppScreen(){document.getElementById("loginScreen").style.display="none";document.getElementById("appScreen").style.display="block";document.getElementById("activeRepLabel").innerText=currentRep}
+function logoutRep(){
+  stopLiveTracking();
+  localStorage.removeItem("amial_auth_rep");localStorage.removeItem("amial_auth_pin");
+  currentRep="";currentPin="";currentOrdersCache=[];searchQuery="";document.getElementById("searchInput").value="";
+  document.getElementById("appScreen").style.display="none";document.getElementById("loginScreen").style.display="flex";document.getElementById("loginPinInput").value="";
+  let gps=document.getElementById("gpsStatus");if(gps){gps.textContent="📍 GPS: غير مفعل";gps.className="live-status off";}
+}
+async function loadAuthenticatedOrders(){
+  if(!currentRep)return;let sheet=document.getElementById("sheetSelect").value;document.getElementById("loader").style.display="block";
+  let url=`${WEB_APP_URL}?action=loginAndGetOrders&sheetName=${encodeURIComponent(sheet)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&_t=${Date.now()}`;
+  try{let res=await fetch(url,{cache:"no-store"});let data=await res.json();document.getElementById("loader").style.display="none";
+    if(data.status==="success"){defaultCommRate=data.defaultCommission||25;currentOrdersCache=data.orders||[];localStorage.setItem("amial_orders_"+currentRep,JSON.stringify(currentOrdersCache));let mo=localStorage.getItem(`amial_order_${currentRep}_${sheet}`);if(mo)manualOrder=JSON.parse(mo);renderOrders();toast("تم التحديث ✅");sendLiveLocation();}
+    else{alert(data.message||"انتهت الجلسة");logoutRep()}
+  }catch(e){document.getElementById("loader").style.display="none";toast("أنت بدون نت - بيانات محفوظة 🟡")}
+}
+function setFilter(f,el){activeFilter=f;document.querySelectorAll(".f-tab").forEach(t=>t.classList.remove("active"));if(el)el.classList.add("active");renderOrders()}
+function handleSearchInput(){let inp=document.getElementById("searchInput");searchQuery=inp.value.trim().toLowerCase();document.getElementById("clearSearchBtn").classList.toggle("visible",searchQuery.length>0);renderOrders()}
+function clearSearch(){document.getElementById("searchInput").value="";searchQuery="";document.getElementById("clearSearchBtn").classList.remove("visible");renderOrders()}
+function searchByBarcode(){let v=document.getElementById("barcodeInput").value.trim();if(!v)return;document.getElementById("searchInput").value=v;searchQuery=v.toLowerCase();document.getElementById("clearSearchBtn").classList.add("visible");renderOrders();toast("🔍 بحث عن: "+v);document.getElementById("barcodeInput").value=""}
+function voiceSearch(){let SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){toast("المتصفح لا يدعم البحث الصوتي");return}let r=new SR();r.lang="ar-EG";r.onresult=e=>{let txt=e.results[0][0].transcript;document.getElementById("searchInput").value=txt;searchQuery=txt.toLowerCase();renderOrders();toast("🎤 بحثت عن: "+txt)};r.start();toast("🎤 اتكلم دلوقتي...")}
+function matchesSearchQuery(o,q){if(!q)return true;let p=getPrivate(o.rowIndex);return [o.clientName,o.phone,o.governorate,o.address,o.sender,o.notesN,o.confirmL,p.addr,p.note,String(o.price||""),String(o.collectedK||"")].some(v=>String(v||"").toLowerCase().includes(q))}
+function formatEgyptianPhone(r){let c=String(r||"").replace(/[^0-9]/g,"");if(c.length===10&&c.startsWith("1"))c="0"+c;return c}
+function extractDayFromColumnX(d){if(!d)return "";let s=String(d).trim();let m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);if(m)return String(parseInt(m[1]));return ""}
+function getOrderStatusType(o){let p=parseFloat(o.price)||0;let c=parseFloat(o.collectedK)||0;let l=String(o.confirmL||"").trim();if(l==="مرتجع")return "returned";if(l==="جزئي"||(c>0&&p>0&&c<p))return "partial";if(l==="تم التسليم"||(c>0&&p>0&&c>=p))return "delivered";return "pending"}
+function getOrdersBySelectedDay(){let d=document.getElementById("daySelect").value;if(d==="all")return currentOrdersCache;return currentOrdersCache.filter(o=>extractDayFromColumnX(o.date)===d)}
+function recalculateTotals(dayOrders){let total=dayOrders.length,del=0,cash=0,comm=0;dayOrders.forEach(o=>{let c=parseFloat(o.collectedK)||0;let st=getOrderStatusType(o);if(c>0)cash+=c;if(st==="delivered"||st==="partial"||c>0){del++;comm+=(o.commissionR>0?o.commissionR:defaultCommRate)}});document.getElementById("totalOrdersCount").innerText=total;document.getElementById("deliveredOrdersCount").innerText=del;document.getElementById("pendingOrdersCount").innerText=total-del;document.getElementById("totalCashCollected").innerText=cash.toLocaleString()+" ج.م";document.getElementById("totalCommission").innerText=comm.toLocaleString()+" ج.م";document.getElementById("netToPay").innerText=(cash-comm).toLocaleString()+" ج.م";let pct=total?Math.round(del/total*100):0;document.getElementById("progressBar").style.width=pct+"%";document.getElementById("progressTxt").innerText=pct>=100?"🎉 خلصت كل أوردراتك يا بطل!":pct>=50?`ممتاز! أنجزت ${pct}% - باقي ${total-del} أوردر`:`ابدأ يومك يا بطل 💪 - أنجزت ${pct}%`}
+function renderOrders(){
+  let list=document.getElementById("ordersList");let day=document.getElementById("daySelect").value;list.innerHTML="";
+  let dayOrders=getOrdersBySelectedDay();recalculateTotals(dayOrders);
+  let sorted=[...dayOrders];
+  if(sortMode==="name")sorted.sort((a,b)=>String(a.clientName||"").localeCompare(String(b.clientName||""),'ar'));
+  else if(sortMode==="manual"){sorted.sort((a,b)=>{let oa=manualOrder[a.rowIndex]!==undefined?manualOrder[a.rowIndex]:999;let ob=manualOrder[b.rowIndex]!==undefined?manualOrder[b.rowIndex]:999;return oa-ob})}
+  let filt=sorted.filter(o=>{let st=getOrderStatusType(o);return (activeFilter==="all"||st===activeFilter)&&matchesSearchQuery(o,searchQuery)});
+  if(!filt.length){list.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted)">لا توجد أوردرات ${searchQuery?`للبحث "${searchQuery}"`:""} في ${day==="all"?"كل الأيام":"يوم "+day}.</div>`;return}
+  filt.forEach((order,idx)=>{
+    let phone=formatEgyptianPhone(order.phone);let wa=phone.startsWith("0")?"2"+phone:phone;let price=parseFloat(order.price)||0;let collected=parseFloat(order.collectedK)||0;let st=getOrderStatusType(order);let locked=isOrderLocked(order);let p=getPrivate(order.rowIndex);
+    let addr=[order.governorate,order.address].filter(Boolean).join(" - ");
+    let statusText={pending:"⏳ تحت التسليم",delivered:"✅ تم التسليم",partial:"⚡ جزئي",returned:"❌ مرتجع"}[st];
+    let msg=`مساء الخير يا فندم, بنتواصل مع حضرتك لتأكيد الطلب الخاص بكم:\nلتأكيد الطلب و بدء عمليه الشحن\nبرجاء الرد بكلمه تأكيد\nو ارسال العنوان تفصيلي مع علامه مميزه بالعنوان (سوبرماركت / مدرسه / قهوه / مسجد ... ), او لوكيشن و لو في رقم اضافي لحضرتك ممكن تبعته علشان المندوب يقدر يسلم حضرتك الطلب\nشكرا لزوق حضرتك`;let enc=encodeURIComponent(msg);
+    let card=document.createElement("div");card.className=`order-card ${locked?"locked":st}`;card.draggable=true;card.dataset.row=order.rowIndex;
+    card.addEventListener("dragstart",e=>{card.classList.add("dragging");e.dataTransfer.setData("text/plain",order.rowIndex)});
+    card.addEventListener("dragend",()=>card.classList.remove("dragging"));
+    card.addEventListener("dragover",e=>e.preventDefault());
+    card.addEventListener("drop",e=>{e.preventDefault();let from=parseInt(e.dataTransfer.getData("text/plain"));let to=order.rowIndex;if(from===to)return;let fromIdx=manualOrder[from]!==undefined?manualOrder[from]:currentOrdersCache.findIndex(x=>x.rowIndex===from);let toIdx=manualOrder[to]!==undefined?manualOrder[to]:currentOrdersCache.findIndex(x=>x.rowIndex===to);manualOrder[from]=toIdx;manualOrder[to]=fromIdx;localStorage.setItem(`amial_order_${currentRep}_${document.getElementById("sheetSelect").value}`,JSON.stringify(manualOrder));sortMode="manual";renderOrders();toast("تم إعادة ترتيب العناوين ↕️")});
+    card.innerHTML=`
+    <div class="client-row"><div><div style="display:flex;gap:6px;align-items:center"><h3 class="client-name">${order.clientName||"بدون اسم"}</h3><span class="order-num">#${idx+1}</span></div><span class="status-pill ${st}">${statusText}</span>${p.priority==="urgent"?`<span style="background:#ef4444;color:#fff;font-size:11px;padding:3px 7px;border-radius:999px;font-weight:800;margin-right:4px">🔴 مهم جداً</span>`:""}</div><div class="badges-wrap">${locked?`<span class="lock-badge">🔒 مقفل</span>`:""}<span class="price-badge">${price} ج.م</span><button class="dots-btn" onclick="toggleDots(${order.rowIndex},event)">⋮</button></div></div>
+    <div class="dots-menu" id="dots-${order.rowIndex}">
+      <button onclick="openPrivateModal(${order.rowIndex})">📝 ✏️ كتابة عنواني وملاحظتي الخاصة</button>
+      <button onclick="copyOrder(${order.rowIndex})">📋 نسخ بيانات العميل</button>
+      <button onclick="openMapsForOrder(${order.rowIndex})">📍 فتح العنوان على الخريطة</button>
+      <button onclick="callClient(${order.rowIndex})">📞 اتصال بالعميل</button>
+      <button onclick="moveUp(${order.rowIndex})">⬆️ انقل الأوردر فوق</button>
+      <button onclick="moveDown(${order.rowIndex})">⬇️ انقل الأوردر تحت</button>
+    </div>
+    <div class="info-line"><span>📍 العنوان الأصلي:</span> ${addr||"غير مسجل"}</div>
+    ${p.addr?`<div class="private-addr">📍 <b>عنواني الخاص:</b> ${p.addr} <span style="color:var(--muted);font-size:11px">(خاص بيك فقط 🔒)</span></div>`:""}
+    ${p.note?`<div class="private-note">📝 <b>ملاحظتي:</b> ${p.note}</div>`:""}
+    <div class="info-line"><span>📱 الهاتف:</span> <b dir="ltr">${phone||"غير مسجل"}</b> | <span>🏷️ الراسل:</span> ${order.sender||"-"}</div>
+    <div class="info-line"><span>📅 التاريخ:</span> ${order.date||"غير محدد"} | <span>💰 الوارد K:</span> <b style="color:var(--success)">${collected} ج.م</b></div>
+    <div class="info-line"><span>📝 ملاحظات الشيت N:</span> ${order.notesN||"-"}</div>
+    ${order.confirmL?`<div class="info-line"><span>📌 الحالة L:</span> <b>${order.confirmL}</b></div>`:""}
+    <div class="contact-actions">
+      <a href="${phone?`tel:${phone}`:'#'}" class="c-btn btn-call">📞 اتصال</a>
+      <a href="${wa?`https://wa.me/${wa}?text=${enc}`:'#'}" target="_blank" class="c-btn btn-wa">💬 واتساب</a>
+      <a href="${phone?`sms:${phone}?body=${enc}`:'#'}" class="c-btn btn-sms">✉️ SMS</a>
+      <a href="https://www.google.com/maps/search/${encodeURIComponent(p.addr||addr)}" target="_blank" class="c-btn btn-map">📍 خريطة</a>
+    </div>
+    <div class="status-controls">
+      <select id="select-${order.rowIndex}" class="status-select" ${locked?"disabled":""} onchange="handleStatusChoice(${order.rowIndex},${price})">
+        <option value="تحت التسليم" ${st==="pending"?"selected":""}>⏳ تحت التسليم</option>
+        <option value="تم التسليم" ${st==="delivered"?"selected":""}>✅ تم التسليم</option>
+        <option value="جزئي" ${st==="partial"?"selected":""}>⚡ جزئي</option>
+        <option value="مرتجع" ${st==="returned"?"selected":""}>❌ مرتجع</option>
+      </select>
+      <button id="btn-${order.rowIndex}" class="btn-save-status" ${locked?"disabled":""} onclick="handleConfirmButton(${order.rowIndex},${price})">${locked?"🔒 مقفل":"تأكيد"}</button>
+    </div>
+    <div class="drag-handle">↕️ اسحب من هنا لترتيب العناوين يدوياً</div>`;
+    list.appendChild(card);
+  });
+  // بعد كل رسم، حدّث اللايف عشان صورة الصفحة تتحدث
+  sendLiveLocation();
+}
+function moveUp(row){let idx=manualOrder[row]!==undefined?manualOrder[row]:currentOrdersCache.findIndex(x=>x.rowIndex===row);if(idx<=0){toast("ده أول أوردر خلاص");return}let other=currentOrdersCache.find(x=>(manualOrder[x.rowIndex]!==undefined?manualOrder[x.rowIndex]:currentOrdersCache.indexOf(x))===idx-1);if(other){manualOrder[other.rowIndex]=idx;manualOrder[row]=idx-1;localStorage.setItem(`amial_order_${currentRep}_${document.getElementById("sheetSelect").value}`,JSON.stringify(manualOrder));renderOrders();toast("تم النقل فوق ⬆️")}}
+function moveDown(row){let idx=manualOrder[row]!==undefined?manualOrder[row]:currentOrdersCache.findIndex(x=>x.rowIndex===row);let other=currentOrdersCache.find(x=>(manualOrder[x.rowIndex]!==undefined?manualOrder[x.rowIndex]:currentOrdersCache.indexOf(x))===idx+1);if(!other){toast("ده آخر أوردر");return}manualOrder[other.rowIndex]=idx;manualOrder[row]=idx+1;localStorage.setItem(`amial_order_${currentRep}_${document.getElementById("sheetSelect").value}`,JSON.stringify(manualOrder));renderOrders();toast("تم النقل تحت ⬇️")}
+function copyDailySummary(){let t=`📦 ملخص ${currentRep} - ${document.getElementById("sheetSelect").value}\nالإجمالي: ${document.getElementById("totalOrdersCount").innerText} | تم: ${document.getElementById("deliveredOrdersCount").innerText}\nالتحصيل: ${document.getElementById("totalCashCollected").innerText}\nالصافي: ${document.getElementById("netToPay").innerText}`;navigator.clipboard.writeText(t).then(()=>toast("تم نسخ الملخص ✅"))}
+function handleStatusChoice(row,price){let o=currentOrdersCache.find(x=>x.rowIndex===row);if(isOrderLocked(o)){renderOrders();return}let s=document.getElementById(`select-${row}`).value;if(s==="تم التسليم"||s==="جزئي"||s==="مرتجع")openStatusModal(row,price,s)}
+function handleConfirmButton(row,price){let o=currentOrdersCache.find(x=>x.rowIndex===row);if(isOrderLocked(o)){alert("هذا الأوردر مقفل");return}let s=document.getElementById(`select-${row}`).value;if(s==="تم التسليم"||s==="جزئي"||s==="مرتجع")openStatusModal(row,price,s);else sendUpdateToSheet(row,s,"","")}
+function setModalPrice(type){if(!pendingModalData)return;let inp=document.getElementById("modalPriceInput");if(type==="full")inp.value=pendingModalData.originalPrice;else if(type==="half")inp.value=Math.round(pendingModalData.originalPrice/2);else inp.value=""}
+function openStatusModal(row,price,status){let o=currentOrdersCache.find(x=>x.rowIndex===row)||{};if(isOrderLocked(o)){alert("مقفل");return}pendingModalData={rowIndex:row,originalPrice:price,statusVal:status};document.getElementById("modalTitle").innerText=`حالة الأوردر: ${status}`;document.getElementById("modalSub").innerText=`العميل: ${o.clientName||""} | السعر الأصلي: ${price} ج.م`;let pi=document.getElementById("modalPriceInput");if(status==="تم التسليم")pi.value=price>0?price:(o.collectedK||"");else if(status==="جزئي")pi.value=o.collectedK>0?o.collectedK:"";else pi.value="";document.getElementById("modalNotesInput").value="";document.getElementById("statusModal").classList.add("show");setTimeout(()=>pi.focus(),100)}
+function closeStatusModal(){document.getElementById("statusModal").classList.remove("show");pendingModalData=null;renderOrders()}
+async function confirmModalUpdate(){if(!pendingModalData)return;let {rowIndex,statusVal}=pendingModalData;let p=document.getElementById("modalPriceInput").value.trim();let n=document.getElementById("modalNotesInput").value.trim();document.getElementById("statusModal").classList.remove("show");pendingModalData=null;await sendUpdateToSheet(rowIndex,statusVal,p,n)}
+async function sendUpdateToSheet(rowIndex,statusVal,priceStr,notes){
+  let sheet=document.getElementById("sheetSelect").value;let btn=document.getElementById(`btn-${rowIndex}`);if(btn){btn.disabled=true;btn.innerText="⏳..."}
+  let url=`${WEB_APP_URL}?action=updateOrderStatus&sheetName=${encodeURIComponent(sheet)}&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&rowIndex=${rowIndex}&orderStatus=${encodeURIComponent(statusVal)}&price=${encodeURIComponent(priceStr)}&notes=${encodeURIComponent(notes)}&_t=${Date.now()}`;
+  try{let res=await fetch(url,{cache:"no-store"});let json=await res.json();
+    if(json.status==="success"){
+      let o=currentOrdersCache.find(x=>x.rowIndex===rowIndex);if(o){if(json.savedPrice!==undefined)o.collectedK=Number(json.savedPrice)||0;o.confirmL=json.savedStatus||statusVal;if(json.savedNotes!==undefined)o.notesN=json.savedNotes;else o.notesN=notes;o.isLocked=isOrderLocked(o)}
+      localStorage.setItem("amial_orders_"+currentRep,JSON.stringify(currentOrdersCache));
+      if(btn)btn.innerText="✔ تم";toast("تم الحفظ ✅ "+statusVal);vibrate();sendLiveLocation();setTimeout(()=>renderOrders(),300);
+    }else{alert(json.message||"خطأ في التحديث");if(btn){btn.disabled=false;btn.innerText="تأكيد"}}
+  }catch(e){
+    toast("بدون نت - تم الحفظ محلياً 🟡");
+    let o=currentOrdersCache.find(x=>x.rowIndex===rowIndex);if(o){o.collectedK=priceStr?Number(priceStr):o.collectedK;o.confirmL=statusVal;o.notesN=notes;localStorage.setItem("amial_orders_"+currentRep,JSON.stringify(currentOrdersCache))}
+    if(btn){btn.disabled=false;btn.innerText="تأكيد"}renderOrders();
+  }
+}
+</script>
 </body>
 </html>
