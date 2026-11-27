@@ -13,7 +13,7 @@
 <title>تطبيق المناديب - AMIAl EXPRESS V7 CLEAN</title>
 <script>
 (function enforceFreshBuild(){
-  const BUILD_TAG="v7-clean-20261203";
+  const BUILD_TAG="v7-clean-no-barcode-20261203";
   const LOGO_FILE="./1726248526371.jpeg";
   const url=new URL(window.location.href);
   const currentBuild=url.searchParams.get("_b");
@@ -138,8 +138,6 @@ body{margin:0;background:var(--bg);color:var(--text);padding-bottom:100px}
 .bottom-bar button{background:none;border:none;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
 .bottom-bar button.active{color:var(--primary)}
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#020617;border:1px solid #38bdf8;padding:11px 16px;border-radius:999px;z-index:1000;display:none;font-size:13px;font-weight:700;max-width:90%;text-align:center}
-.scanner-box{margin:0 14px 12px;background:#0f172a;border:1px dashed #38bdf8;border-radius:12px;padding:10px;display:flex;gap:8px;align-items:center}
-.scanner-box input{flex:1;padding:9px;background:#1e293b;border:1px solid var(--border);color:#fff;border-radius:8px;outline:none}
 </style>
 </head>
 <body>
@@ -165,7 +163,7 @@ body{margin:0;background:var(--bg);color:var(--text);padding-bottom:100px}
 <div class="rep-badge" id="activeRepLabel">---</div>
 <select id="sheetSelect" class="sheet-select" onchange="loadAuthenticatedOrders()">
 <option value="1/12/2026">شهر 12</option>
-<option value="1/11/2026">شهر 11</option>
+<option value="1/11/2026" selected>شهر 11</option>
 <option value="1/10/2026">شهر 10</option>
 <option value="1/9/2026">شهر 9</option>
 <option value="1/8/2026">شهر 8</option>
@@ -177,7 +175,7 @@ body{margin:0;background:var(--bg);color:var(--text);padding-bottom:100px}
 <select id="daySelect" class="day-select" onchange="renderOrders()"><option value="all">كل الأيام</option></select>
 <button class="btn-refresh" onclick="loadAuthenticatedOrders()">🔄</button>
 </div>
-<div style="text-align:center;margin-top:8px"><span id="liveBadge" class="live-status off">⚫ غير متصل باللايف</span> <span style="font-size:11px;color:var(--muted)">موقعك بيتبعت للمدير كل 30 ثانية</span></div>
+<div style="text-align:center;margin-top:8px"><span id="liveBadge" class="live-status off">⚫ غير متصل باللايف</span></div>
 </div>
 
 <div class="finance-panel">
@@ -187,7 +185,7 @@ body{margin:0;background:var(--bg);color:var(--text);padding-bottom:100px}
 <div class="progress-txt" id="progressTxt">ابدأ يومك يا بطل 💪</div>
 </div>
 
-<div class="scanner-box"><span>📷</span><input id="barcodeInput" placeholder="امسح باركود الأوردر للبحث الفوري..." onkeypress="if(event.key==='Enter')searchByBarcode()"><button class="btn-refresh" onclick="searchByBarcode()">بحث</button></div>
+<!-- تم حذف صندوق الباركود نهائياً - البحث بالاسم والهاتف موجود تحت -->
 
 <div class="sort-bar">
 <button class="sort-btn active" id="sortManualBtn" onclick="setSortMode('manual')">↕️ ترتيب يدوي</button>
@@ -211,6 +209,7 @@ body{margin:0;background:var(--bg);color:var(--text);padding-bottom:100px}
 <div class="f-tab" onclick="setFilter('returned',this)">❌ مرتجع</div>
 </div>
 
+<!-- البحث الوحيد - بالاسم والهاتف والعنوان -->
 <div class="search-box-wrap">
 <span class="search-icon">🔍</span>
 <input type="text" id="searchInput" class="search-input" placeholder="ابحث بالاسم، الهاتف، العنوان، الراسل، أو السعر..." oninput="handleSearchInput()"/>
@@ -265,7 +264,6 @@ function isOrderLocked(o){if(o&&o.isLocked===true)return true;let n=normalizeAr(
 
 (function(){let sel=document.getElementById("daySelect");for(let d=1;d<=31;d++){let o=document.createElement("option");o.value=d;o.textContent="يوم "+d;sel.appendChild(o)}})();
 
-// ===== نظام اللايف - إرسال الموقع كل 30 ثانية =====
 function startLiveTracking(){
   if(liveInterval) clearInterval(liveInterval);
   sendLiveLocation();
@@ -301,32 +299,14 @@ function saveLiveToStorage(lat,lng){
     let deliveredCount=currentOrdersCache.filter(o=>getOrderStatusType(o)==="delivered").length;
     let cashCount=currentOrdersCache.reduce((sum,o)=>sum+(parseFloat(o.collectedK)||0),0);
     let previewText=`صفحة ${currentRep} - ${deliveredCount}/${currentOrdersCache.length} تم - ${cashCount.toLocaleString()} ج.م`;
-    let obj={
-      name:currentRep,
-      lat:lat||30.7865, lng:lng||31.0004,
-      area:lat?`GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)}`:"الموقع غير مفعل - أونلاين",
-      lastSeen:Date.now(),
-      orders:currentOrdersCache.length,
-      delivered:deliveredCount,
-      cash:cashCount,
-      phone:"",
-      img:`https://via.placeholder.com/400x200/0f172a/38bdf8?text=${encodeURIComponent(previewText)}`,
-      sheet:document.getElementById("sheetSelect")?document.getElementById("sheetSelect").value:"",
-      status:"online"
-    };
+    let obj={name:currentRep,lat:lat||30.7865,lng:lng||31.0004,area:lat?`GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)}`:"الموقع غير مفعل - أونلاين",lastSeen:Date.now(),orders:currentOrdersCache.length,delivered:deliveredCount,cash:cashCount,phone:"",img:`https://via.placeholder.com/400x200/0f172a/38bdf8?text=${encodeURIComponent(previewText)}`,sheet:document.getElementById("sheetSelect")?document.getElementById("sheetSelect").value:"",status:"online"};
     let idx=live.findIndex(r=>r.name===currentRep);
     if(idx>=0) live[idx]=obj; else live.push(obj);
     localStorage.setItem('amial_live_reps',JSON.stringify(live));
     localStorage.setItem('amial_live_'+currentRep,JSON.stringify(obj));
   }catch(e){}
 }
-window.addEventListener('beforeunload',()=>{
-  try{
-    let live=JSON.parse(localStorage.getItem('amial_live_reps')||"[]");
-    let idx=live.findIndex(r=>r.name===currentRep);
-    if(idx>=0){live[idx].status="offline";live[idx].lastSeen=Date.now()-120000;localStorage.setItem('amial_live_reps',JSON.stringify(live));}
-  }catch(e){}
-});
+window.addEventListener('beforeunload',()=>{try{let live=JSON.parse(localStorage.getItem('amial_live_reps')||"[]");let idx=live.findIndex(r=>r.name===currentRep);if(idx>=0){live[idx].status="offline";live[idx].lastSeen=Date.now()-120000;localStorage.setItem('amial_live_reps',JSON.stringify(live));}}catch(e){}});
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden && currentRep){ sendLiveLocation(); } });
 
 function getPrivateKey(row){return `amial_private_${currentRep}_${document.getElementById("sheetSelect").value}_${row}`}
@@ -390,6 +370,7 @@ async function attemptLogin(){
       localStorage.setItem("amial_auth_rep",currentRep);localStorage.setItem("amial_auth_pin",currentPin);localStorage.setItem("amial_orders_"+rep,JSON.stringify(data.orders||[]));
       showAppScreen();currentOrdersCache=data.orders||[];renderOrders();toast("أهلاً بيك يا "+rep+" 🎉");vibrate();
       startLiveTracking();
+      if(!currentOrdersCache.length){toast("⚠️ الشهر ده فاضي - جرّب تختار شهر 11 من فوق");}
     } else err.innerText=data.message||"بيانات الدخول غير صحيحة!";
   }catch(e){
     btn.disabled=false;btn.innerText="🔐 دخول وعرض الأوردرات";err.innerText="تعذر الاتصال - حاول تاني";
@@ -415,9 +396,8 @@ async function loadAuthenticatedOrders(){
 function setFilter(f,el){activeFilter=f;document.querySelectorAll(".f-tab").forEach(t=>t.classList.remove("active"));if(el)el.classList.add("active");renderOrders()}
 function handleSearchInput(){let inp=document.getElementById("searchInput");searchQuery=inp.value.trim().toLowerCase();document.getElementById("clearSearchBtn").classList.toggle("visible",searchQuery.length>0);renderOrders()}
 function clearSearch(){document.getElementById("searchInput").value="";searchQuery="";document.getElementById("clearSearchBtn").classList.remove("visible");renderOrders()}
-function searchByBarcode(){let v=document.getElementById("barcodeInput").value.trim();if(!v)return;document.getElementById("searchInput").value=v;searchQuery=v.toLowerCase();document.getElementById("clearSearchBtn").classList.add("visible");renderOrders();toast("🔍 بحث عن: "+v);document.getElementById("barcodeInput").value=""}
 function voiceSearch(){let SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){toast("المتصفح لا يدعم البحث الصوتي");return}let r=new SR();r.lang="ar-EG";r.onresult=e=>{let txt=e.results[0][0].transcript;document.getElementById("searchInput").value=txt;searchQuery=txt.toLowerCase();renderOrders();toast("🎤 بحثت عن: "+txt)};r.start();toast("🎤 اتكلم دلوقتي...")}
-function matchesSearchQuery(o,q){if(!q)return true;let p=getPrivate(o.rowIndex);return [o.clientName,o.phone,o.governorate,o.address,o.sender,o.notesN,o.confirmL,p.addr,p.note,String(o.price||""),String(o.collectedK||"")].some(v=>String(v||"").toLowerCase().includes(q))}
+function matchesSearchQuery(o,q){if(!q)return true;let p=getPrivate(o.rowIndex);let cleanQ=q.replace(/^0/,"");return [o.clientName,o.phone,o.governorate,o.address,o.sender,o.notesN,o.confirmL,p.addr,p.note,String(o.price||""),String(o.collectedK||"")].some(v=>{let s=String(v||"").toLowerCase();return s.includes(q)||(cleanQ&&s.includes(cleanQ))})}
 function formatEgyptianPhone(r){let c=String(r||"").replace(/[^0-9]/g,"");if(c.length===10&&c.startsWith("1"))c="0"+c;return c}
 function extractDayFromColumnX(d){if(!d)return "";let s=String(d).trim();let m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);if(m)return String(parseInt(m[1]));return ""}
 function getOrderStatusType(o){let p=parseFloat(o.price)||0;let c=parseFloat(o.collectedK)||0;let l=String(o.confirmL||"").trim();if(l==="مرتجع")return "returned";if(l==="جزئي"||(c>0&&p>0&&c<p))return "partial";if(l==="تم التسليم"||(c>0&&p>0&&c>=p))return "delivered";return "pending"}
@@ -430,7 +410,10 @@ function renderOrders(){
   if(sortMode==="name")sorted.sort((a,b)=>String(a.clientName||"").localeCompare(String(b.clientName||""),'ar'));
   else if(sortMode==="manual"){sorted.sort((a,b)=>{let oa=manualOrder[a.rowIndex]!==undefined?manualOrder[a.rowIndex]:999;let ob=manualOrder[b.rowIndex]!==undefined?manualOrder[b.rowIndex]:999;return oa-ob})}
   let filt=sorted.filter(o=>{let st=getOrderStatusType(o);return (activeFilter==="all"||st===activeFilter)&&matchesSearchQuery(o,searchQuery)});
-  if(!filt.length){list.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted)">لا توجد أوردرات ${searchQuery?`للبحث "${searchQuery}"`:""} في ${day==="all"?"كل الأيام":"يوم "+day}.</div>`;return}
+  if(!filt.length){
+    if(!currentOrdersCache.length){list.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted);line-height:1.8">لا توجد أوردرات في ورقة <b style="color:#38bdf8">${document.getElementById("sheetSelect").value}</b><br>جرّب تختار <b>شهر 11</b> من فوق، أو دوس تحديث 🔄<br><span style="font-size:12px">لو لسه فاضي، تأكد إن اسمك في الشيت مكتوب بنفس الاسم اللي دخلت بيه</span></div>`;}
+    else{list.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted)">لا توجد أوردرات ${searchQuery?`للبحث "${searchQuery}"`:""} في ${day==="all"?"كل الأيام":"يوم "+day}.</div>`;}
+    return}
   filt.forEach((order,idx)=>{
     let phone=formatEgyptianPhone(order.phone);let wa=phone.startsWith("0")?"2"+phone:phone;let price=parseFloat(order.price)||0;let collected=parseFloat(order.collectedK)||0;let st=getOrderStatusType(order);let locked=isOrderLocked(order);let p=getPrivate(order.rowIndex);
     let addr=[order.governorate,order.address].filter(Boolean).join(" - ");
