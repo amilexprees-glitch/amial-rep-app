@@ -13,7 +13,7 @@
 <title>تطبيق المناديب - AMIAl EXPRESS V7 CLEAN</title>
 <script>
 (function enforceFreshBuild(){
-  const BUILD_TAG="v7-return-clear-no-shipping-20261203";
+  const BUILD_TAG="v7-counts-wa-20261204";
   const LOGO_FILE="./1726248526371.jpeg";
   const url=new URL(window.location.href);
   const currentBuild=url.searchParams.get("_b");
@@ -77,6 +77,8 @@ body{margin:0;background:var(--bg);color:var(--text);padding-bottom:100px}
 .filter-tabs{display:flex;gap:6px;padding:0 14px 10px;overflow-x:auto}
 .f-tab{flex:1;padding:8px 4px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:11px;font-weight:bold;text-align:center;cursor:pointer;white-space:nowrap}
 .f-tab.active{background:var(--primary);color:#00111f;border-color:var(--primary)}
+.f-count{background:rgba(0,0,0,.25);padding:1px 6px;border-radius:999px;font-size:11px;font-weight:900;margin-right:3px}
+.f-tab.active .f-count{background:rgba(255,255,255,.25)}
 .search-box-wrap{padding:0 14px 12px;position:relative}
 .search-input{width:100%;padding:10px 70px 10px 36px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;font-weight:600;outline:none}
 .search-icon{position:absolute;right:25px;top:50%;transform:translateY(calc(-50% - 6px));font-size:14px;pointer-events:none}
@@ -200,11 +202,11 @@ body{margin:0;background:var(--bg);color:var(--text);padding-bottom:100px}
 </div>
 
 <div class="filter-tabs">
-<div class="f-tab active" onclick="setFilter('all',this)">الكل</div>
-<div class="f-tab" onclick="setFilter('pending',this)">⏳ تحت التسليم</div>
-<div class="f-tab" onclick="setFilter('delivered',this)">✅ تم التسليم</div>
-<div class="f-tab" onclick="setFilter('partial',this)">⚡ جزئي</div>
-<div class="f-tab" onclick="setFilter('returned',this)">❌ مرتجع</div>
+<div class="f-tab active" onclick="setFilter('all',this)">الكل <span class="f-count" id="countAll">0</span></div>
+<div class="f-tab" onclick="setFilter('pending',this)">⏳ تحت التسليم <span class="f-count" id="countPending">0</span></div>
+<div class="f-tab" onclick="setFilter('delivered',this)">✅ تم التسليم <span class="f-count" id="countDelivered">0</span></div>
+<div class="f-tab" onclick="setFilter('partial',this)">⚡ جزئي <span class="f-count" id="countPartial">0</span></div>
+<div class="f-tab" onclick="setFilter('returned',this)">❌ مرتجع <span class="f-count" id="countReturned">0</span></div>
 </div>
 
 <div class="search-box-wrap">
@@ -254,7 +256,7 @@ body{margin:0;background:var(--bg);color:var(--text);padding-bottom:100px}
 <div id="toast" class="toast"></div>
 
 <script>
-const WEB_APP_URL="https://script.google.com/macros/s/AKfycbzq9-qZXfXRoakha9eulyXYJQ16Ws-cu5RzoLlFmj3DFdxKvd_k9O70Pa_2tepLQX9nxw/exec";
+const WEB_APP_URL="https://script.google.com/macros/s/AKfycbwxTDxLwbjLgafIdfJKQCweFc4KGSWDCaOztlxg1G9V3SGYJkfJA3OIwYdfRC_JIVQyYg/exec";
 const LOCK_KEYWORDS_NORM=["شبراوى","راقي","محمد","محمود"];
 let currentRep="",currentPin="",currentOrdersCache=[],defaultCommRate=25,activeFilter="all",searchQuery="",pendingModalData=null,privateModalRow=null,sortMode="manual",manualOrder={},liveInterval=null,lastLocation=null;
 
@@ -265,7 +267,7 @@ function isOrderLocked(o){if(o&&o.isLocked===true)return true;let n=normalizeAr(
 
 (function(){let sel=document.getElementById("daySelect");for(let d=1;d<=31;d++){let o=document.createElement("option");o.value=d;o.textContent="يوم "+d;sel.appendChild(o)}})();
 
-// ===== تعديل الموقع التلقائي - يشتغل أول ما الأبليكيشن يفتح حتى قبل الدخول =====
+// ===== تعديل الموقع التلقائي =====
 let autoLocWatchId=null, autoLocRetryTimer=null, autoLocGranted=false;
 function updateGpsUI(msg, on){
   let gps=document.getElementById("gpsStatus");
@@ -276,15 +278,13 @@ function updateGpsUI(msg, on){
 function autoRequestLocation(){
   if(!navigator.geolocation){ updateGpsUI("❌ موبايلك مش بيدعم الموقع", false); return; }
   updateGpsUI("📍 بيطلب إذن الموقع... دوس السماح", false);
-  // أول طلب فوري - ده اللي بيطلع رسالة السماح بتاعة المتصفح
   navigator.geolocation.getCurrentPosition((pos)=>{
     autoLocGranted=true;
-    lastLocation={lat:pos.coords.latitude, lng:pos.coords.longitude};
+    lastLocation={lat:pos.coords.latitude, lng:pos.coords.longitude, ts:Date.now()};
     updateGpsUI("✅ الموقع شغال - بيتبعت كل 30 ثانية", true);
-    // تتبع مستمر طول ما الأبليكيشن مفتوح
     if(autoLocWatchId==null){
       autoLocWatchId=navigator.geolocation.watchPosition((p)=>{
-        lastLocation={lat:p.coords.latitude, lng:p.coords.longitude};
+        lastLocation={lat:p.coords.latitude, lng:p.coords.longitude, ts:Date.now()};
         updateGpsUI("✅ الموقع شغال - آخر تحديث: "+new Date().toLocaleTimeString('ar-EG'), true);
         if(currentRep) sendLiveLocation();
       },()=>{},{enableHighAccuracy:true, maximumAge:10000, timeout:15000});
@@ -292,21 +292,16 @@ function autoRequestLocation(){
     if(currentRep) sendLiveLocation();
   },(err)=>{
     autoLocGranted=false;
-    // لو المندوب رفض قبل كده، المتصفح مش هيسأل تاني - لازم يسمح يدوي من القفل
     updateGpsUI("❌ الموقع مرفوض - دوس على القفل 🔒 فوق واختار الموقع > السماح وبعدين حدّث الصفحة", false);
-    // حاول تاني بعد 10 ثواني لو سمح في النص
     if(autoLocRetryTimer) clearTimeout(autoLocRetryTimer);
     autoLocRetryTimer=setTimeout(autoRequestLocation, 10000);
   },{enableHighAccuracy:true, timeout:15000, maximumAge:0});
 }
-// شغّل الموقع تلقائي أول ما الصفحة تفتح
 window.addEventListener('load', ()=>{ setTimeout(autoRequestLocation, 500); });
-// لو رجع للأبليكيشن تاني بعد ما كان مخفي، حاول تاني
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && !autoLocGranted) autoRequestLocation(); });
 
 function startLiveTracking(){
   if(liveInterval) clearInterval(liveInterval);
-  // لو الموقع اتجاب قبل الدخول، ابعته على طول
   if(lastLocation) sendLiveLocation();
   else autoRequestLocation();
   sendLiveLocation();
@@ -328,11 +323,10 @@ function stopLiveTracking(){
 }
 function sendLiveLocation(){
   if(!currentRep) return;
-  // لو عندنا موقع جاهز من الطلب التلقائي، ابعته على طول من غير ما نستنى طلب جديد
   if(lastLocation && Date.now() - (lastLocation.ts||0) < 60000){
     let lat=lastLocation.lat, lng=lastLocation.lng;
     saveLiveToStorage(lat,lng);
-    fetch(`${WEB_APP_URL}?action=updateLive&repName=${encodeURIComponent(currentRep)}&lat=${lat}&lng=${lng}&orders=${currentOrdersCache.length}&delivered=${currentOrdersCache.filter(o=>getOrderStatusType(o)==="delivered").length}&_t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
+    fetch(`${WEB_APP_URL}?action=updateLive&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&consentStatus=granted&lat=${lat}&lng=${lng}&orders=${currentOrdersCache.length}&delivered=${currentOrdersCache.filter(o=>getOrderStatusType(o)==="delivered").length}&_t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
     return;
   }
   if(!navigator.geolocation){ saveLiveToStorage(null,null); return; }
@@ -340,7 +334,7 @@ function sendLiveLocation(){
     let lat=pos.coords.latitude, lng=pos.coords.longitude;
     lastLocation={lat,lng,ts:Date.now()};
     saveLiveToStorage(lat,lng);
-    fetch(`${WEB_APP_URL}?action=updateLive&repName=${encodeURIComponent(currentRep)}&lat=${lat}&lng=${lng}&orders=${currentOrdersCache.length}&delivered=${currentOrdersCache.filter(o=>getOrderStatusType(o)==="delivered").length}&_t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
+    fetch(`${WEB_APP_URL}?action=updateLive&repName=${encodeURIComponent(currentRep)}&pin=${encodeURIComponent(currentPin)}&consentStatus=granted&lat=${lat}&lng=${lng}&orders=${currentOrdersCache.length}&delivered=${currentOrdersCache.filter(o=>getOrderStatusType(o)==="delivered").length}&_t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
   },err=>{ saveLiveToStorage(null,null); },{enableHighAccuracy:true,timeout:8000,maximumAge:10000});
 }
 function saveLiveToStorage(lat,lng){
@@ -402,7 +396,6 @@ function openRouteMaps(lat,lng){
 
 window.onload=function(){
   if(window.__APP_ICON_URL__){document.getElementById("loginLogoImg").src=window.__APP_ICON_URL__;document.getElementById("headerLogoImg").src=window.__APP_ICON_URL__}
-  // تعديل: اطلب الموقع تلقائي أول ما يفتح حتى قبل الدخول
   setTimeout(autoRequestLocation, 600);
   let p=new URLSearchParams(location.search);let ur=p.get("rep"),up=p.get("pin");
   if(ur&&up){document.getElementById("loginRepInput").value=ur;document.getElementById("loginPinInput").value=up;attemptLogin();return}
@@ -454,6 +447,12 @@ function formatEgyptianPhone(r){let c=String(r||"").replace(/[^0-9]/g,"");if(c.l
 function extractDayFromColumnX(d){if(!d)return "";let s=String(d).trim();let m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);if(m)return String(parseInt(m[1]));return ""}
 function getOrderStatusType(o){let p=parseFloat(o.price)||0;let c=parseFloat(o.collectedK)||0;let l=String(o.confirmL||"").trim();if(l==="مرتجع")return "returned";if(l==="جزئي"||(c>0&&p>0&&c<p))return "partial";if(l==="تم التسليم"||(c>0&&p>0&&c>=p))return "delivered";return "pending"}
 function getOrdersBySelectedDay(){let d=document.getElementById("daySelect").value;if(d==="all")return currentOrdersCache;return currentOrdersCache.filter(o=>extractDayFromColumnX(o.date)===d)}
+function updateFilterCounts(dayOrders){
+  let c={all:dayOrders.length,pending:0,delivered:0,partial:0,returned:0};
+  dayOrders.forEach(o=>{ c[getOrderStatusType(o)]++ });
+  let set=(id,v)=>{let el=document.getElementById(id); if(el) el.textContent=v};
+  set("countAll",c.all); set("countPending",c.pending); set("countDelivered",c.delivered); set("countPartial",c.partial); set("countReturned",c.returned);
+}
 function recalculateTotals(dayOrders){
   let total=dayOrders.length,del=0,cash=0,comm=0;
   dayOrders.forEach(o=>{
@@ -475,7 +474,7 @@ function recalculateTotals(dayOrders){
 }
 function renderOrders(){
   let list=document.getElementById("ordersList");let day=document.getElementById("daySelect").value;list.innerHTML="";
-  let dayOrders=getOrdersBySelectedDay();recalculateTotals(dayOrders);
+  let dayOrders=getOrdersBySelectedDay();recalculateTotals(dayOrders);updateFilterCounts(dayOrders);
   let sorted=[...dayOrders];
   if(sortMode==="name")sorted.sort((a,b)=>String(a.clientName||"").localeCompare(String(b.clientName||""),'ar'));
   else if(sortMode==="manual"){sorted.sort((a,b)=>{let oa=manualOrder[a.rowIndex]!==undefined?manualOrder[a.rowIndex]:999;let ob=manualOrder[b.rowIndex]!==undefined?manualOrder[b.rowIndex]:999;return oa-ob})}
@@ -488,7 +487,10 @@ function renderOrders(){
     let phone=formatEgyptianPhone(order.phone);let wa=phone.startsWith("0")?"2"+phone:phone;let price=parseFloat(order.price)||0;let collected=parseFloat(order.collectedK)||0;let st=getOrderStatusType(order);let locked=isOrderLocked(order);let p=getPrivate(order.rowIndex);
     let addr=[order.governorate,order.address].filter(Boolean).join(" - ");
     let statusText={pending:"⏳ تحت التسليم",delivered:"✅ تم التسليم",partial:"⚡ جزئي",returned:"❌ مرتجع"}[st];
-    let msg=`مساء الخير يا فندم, بنتواصل مع حضرتك لتأكيد الطلب الخاص بكم:\nلتأكيد الطلب و بدء عمليه الشحن\nبرجاء الرد بكلمه تأكيد\nو ارسال العنوان تفصيلي مع علامه مميزه بالعنوان (سوبرماركت / مدرسه / قهوه / مسجد ... ), او لوكيشن و لو في رقم اضافي لحضرتك ممكن تبعته علشان المندوب يقدر يسلم حضرتك الطلب\nشكرا لزوق حضرتك`;let enc=encodeURIComponent(msg);
+    // ===== رسالة الواتساب الجديدة - بيانات الأوردر + اسم المندوب =====
+    let orderDetails=`العميل: ${order.clientName||"-"} - السعر: ${price} ج.م - العنوان: ${addr||"غير مسجل"} - الراسل: ${order.sender||"-"} - التاريخ: ${order.date||"-"}`;
+    let msg=`مساء الخير يا فندم 🌟\nنتواصل مع حضرتك لتأكيد طلبكم (${orderDetails}) تمهيداً لبدء الشحن مع المندوب ${currentRep} 📦.\nنرجو الرد بـ تأكيد مع إرسال العنوان التفصيلي وعلامة مميزة واضحة ورقم إضافي إن وُجد 📍💬.\nشكراً لذوق حضرتك 🌹.`;
+    let enc=encodeURIComponent(msg);
     let card=document.createElement("div");card.className=`order-card ${locked?"locked":st}`;card.draggable=true;card.dataset.row=order.rowIndex;
     card.addEventListener("dragstart",e=>{card.classList.add("dragging");e.dataTransfer.setData("text/plain",order.rowIndex)});
     card.addEventListener("dragend",()=>card.classList.remove("dragging"));
